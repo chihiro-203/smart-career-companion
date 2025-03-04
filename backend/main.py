@@ -1,19 +1,21 @@
 from fastapi import FastAPI, Form
 from fastapi.middleware.cors import CORSMiddleware
 import os
+from dotenv import load_dotenv  # Import the load_dotenv function
 import google.generativeai as genai
 
-os.environ['GOOGLE_API_KEY'] = "your-api-key"
-genai.configure(api_key=os.environ['GOOGLE_API_KEY'])
+# Load environment variables from .env file
+load_dotenv()
 
-model = genai.GenerativeModel('gemini-pro')
+# Configure the API key using the environment variable
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+
+model = genai.GenerativeModel("gemini-pro")
 
 app = FastAPI()
 
 # Allow requests from your Next.js frontend (localhost:3000 for development)
-origins = [
-    "http://localhost:3000"
-]
+origins = ["http://localhost:3000"]
 
 app.add_middleware(
     CORSMiddleware,
@@ -22,6 +24,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 @app.post("/generate")
 async def generate_content(user_input: str = Form(...)):
