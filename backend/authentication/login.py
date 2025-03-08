@@ -23,7 +23,7 @@ router = APIRouter(
     tags=['auth']
 )
 
-SECRET_KEY = "your_secret_key"
+SECRET_KEY = "a3f8d7e9c4b12d3e5f67189ac12345abcdef6789abcdef1234567890abcdef12"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
@@ -62,8 +62,12 @@ async def login(user: UserLogin):
     response = supabase.table("Authentication").select("*").eq("email", user.email).execute()
 
     user_data = response.data
+    print(user_data)
 
-    if not response or not verify_password(user.password, hash_password(user_data[0]["password"])):
+    try:
+        if not response or not verify_password(user.password, hash_password(user_data[0]["password"])):
+            raise HTTPException(status_code=400, detail="Invalid username or password")
+    except IndexError:
         raise HTTPException(status_code=400, detail="Invalid username or password")
     
     token = create_access_token(data={"sub": user.email})
