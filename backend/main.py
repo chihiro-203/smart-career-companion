@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 from dotenv import load_dotenv  # Import the load_dotenv function
 import google.generativeai as genai
+from authentication import login 
+from authentication import sign_up
 
 # Load environment variables from .env file
 load_dotenv()
@@ -25,6 +27,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(login.router)
+app.include_router(sign_up.router)
 
 @app.post("/generate")
 async def generate_content(user_input: str = Form(...)):
