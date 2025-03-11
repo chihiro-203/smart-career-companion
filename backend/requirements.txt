@@ -1,0 +1,9 @@
+fastapi
+python-dotenv
+google-generativeai
+uvicorn
+sqlalchemy 
+psycopg2
+alembic
+asyncpg
+loguru
