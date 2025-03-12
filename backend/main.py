@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 from dotenv import load_dotenv  # Import the load_dotenv function
 import google.generativeai as genai
+from core.database import Base, engine
 from authentication import login 
 from authentication import sign_up
 
@@ -13,6 +14,7 @@ load_dotenv()
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 model = genai.GenerativeModel("gemini-pro")
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
