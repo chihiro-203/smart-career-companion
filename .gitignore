@@ -39,3 +39,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# python
+*/__pycache__
+*/.env
+__pycache__/
+*.py[cod]
+*.so
+*.dll
+*.dylib
+
+# alemic migrations
+/alembic/versions/*
