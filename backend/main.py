@@ -6,6 +6,8 @@ import google.generativeai as genai
 from core.database import Base, engine
 from authentication import login 
 from authentication import sign_up
+# import multipart
+
 
 # Load environment variables from .env file
 load_dotenv()
@@ -32,7 +34,7 @@ app.add_middleware(
 app.include_router(login.router)
 app.include_router(sign_up.router)
 
-@app.post("/generate")
-async def generate_content(user_input: str = Form(...)):
-    response_data = model.generate_content(user_input)
-    return {"response_text": response_data.text}
+# @app.post("/generate")
+# async def generate_content(user_input: str = Form(...)):
+#     response_data = model.generate_content(user_input)
+#     return {"response_text": response_data.text}

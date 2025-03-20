@@ -2,11 +2,17 @@ from fastapi import APIRouter, Depends, HTTPException
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
-from database import supabase
 from pydantic import BaseModel, EmailStr
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from starlette import status
 from typing import Annotated
+from core import database
+from sqlalchemy.orm import Session
+from models import user as models 
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Schema for user creation (Signup)
 class UserLogin(BaseModel):
@@ -56,19 +62,13 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
 #     token = create_access_token(data={"sub": user.username})
 #     return {"access_token": token, "token_type": "bearer"}
 
-#Login without using Oauth2
-@router.post("/login")
-async def login(user: UserLogin):
-    response = supabase.table("Authentication").select("*").eq("email", user.email).execute()
+# Login without using Oauth2
+@router.post("/login", response_model=None)
+async def login(user: UserLogin, db: Session = Depends(database.get_db)):
+    existing_user = db.query(models.User).filter(models.User.email == user.email).first()
 
-    user_data = response.data
-    print(user_data)
-
-    try:
-        if not response or not verify_password(user.password, hash_password(user_data[0]["password"])):
+    if not verify_password(user.password, existing_user.password_hash):
             raise HTTPException(status_code=400, detail="Invalid username or password")
-    except IndexError:
-        raise HTTPException(status_code=400, detail="Invalid username or password")
     
     token = create_access_token(data={"sub": user.email})
     return {"access_token": token, "token_type": "bearer"}

@@ -1,8 +1,15 @@
 from fastapi import APIRouter, HTTPException, Depends
 from passlib.context import CryptContext
-from database import supabase
 from pydantic import BaseModel, EmailStr
 from starlette import status
+from models import user as models 
+from core import database
+from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Schema for user signup
 class UserCreate(BaseModel):
@@ -19,21 +26,26 @@ router = APIRouter(
 # Password hashing setup
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-@router.post("/signup", status_code=status.HTTP_201_CREATED)
-def signup(user: UserCreate):
-    # Hash the password
-    hashed_password = pwd_context.hash(user.password)
+@router.post("/signup", response_model=None)
+def signup(user: UserCreate, db: Session = Depends(database.get_db)):
+    try:
+        logger.info(user.password)
+        hashed_password = pwd_context.hash(user.password)
 
-    # Check if the user already exists
-    existing_user = supabase.table("Authentication").select("email").eq("email", user.email).execute()
-    if existing_user.data: 
+        # Create a new user instance for the database
+        new_user = models.User(
+            email=user.email,
+            password_hash=hashed_password,
+            phone=user.phone,
+            address=user.address
+        )
+
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)  
+    
+    except IntegrityError:
+        db.rollback()
         raise HTTPException(status_code=400, detail="User with this email already exists")
 
-    # Prepare user data for insertion
-    new_user_data = user.dict()
-    new_user_data["password"] = hashed_password 
-
-    # Insert user into Supabase
-    response = supabase.table("Authentication").insert(new_user_data).execute()
-    
-    return {"message": "User registered successfully", "user": response.data}
+    return {"message": "User registered successfully"}

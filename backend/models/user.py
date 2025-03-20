@@ -14,7 +14,7 @@ class User(Base):
     created_at = Column(TIMESTAMP, server_default=func.now())
     updated_at = Column(TIMESTAMP, server_default=func.now(), onupdate=func.now())
 
-    skills = relationship("UserSkill", back_populates="user", cascade="all, delete")
+    user_skills = relationship("UserSkill", back_populates="user", cascade="all, delete")
     resumes = relationship("Resume", back_populates="user", cascade="all, delete")
     mock_tests = relationship("MockTest", back_populates="user", cascade="all, delete")
 
@@ -25,3 +25,5 @@ class UserSkill(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
     skill = Column(String, nullable=False)
+
+    user = relationship("User", back_populates="user_skills")
