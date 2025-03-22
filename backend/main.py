@@ -6,8 +6,9 @@ import google.generativeai as genai
 from core.database import Base, engine
 from authentication import login 
 from authentication import sign_up
-# import multipart
-
+from authentication import login_google
+from authentication import login_github
+from starlette.middleware.sessions import SessionMiddleware
 
 # Load environment variables from .env file
 load_dotenv()
@@ -29,12 +30,16 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+
 )
 
+app.add_middleware(SessionMiddleware, secret_key=os.getenv("SECRET_KEY"), same_site="lax")
 app.include_router(login.router)
 app.include_router(sign_up.router)
+app.include_router(login_google.router)
+app.include_router(login_github.router)
 
-# @app.post("/generate")
-# async def generate_content(user_input: str = Form(...)):
-#     response_data = model.generate_content(user_input)
-#     return {"response_text": response_data.text}
+@app.post("/generate")
+async def generate_content(user_input: str = Form(...)):
+    response_data = model.generate_content(user_input)
+    return {"response_text": response_data.text}

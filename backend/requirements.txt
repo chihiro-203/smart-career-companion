@@ -6,4 +6,7 @@ sqlalchemy
 psycopg2
 alembic
 asyncpg
-logury
+loguru
+starlette
+python-jose
+authlib
