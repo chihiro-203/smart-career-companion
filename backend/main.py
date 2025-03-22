@@ -9,7 +9,6 @@ from authentication import sign_up
 from authentication import login_google
 from authentication import login_github
 from starlette.middleware.sessions import SessionMiddleware
-
 # Load environment variables from .env file
 load_dotenv()
 
@@ -30,7 +29,6 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-
 )
 
 app.add_middleware(SessionMiddleware, secret_key=os.getenv("SECRET_KEY"), same_site="lax")
