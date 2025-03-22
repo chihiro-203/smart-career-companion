@@ -29,6 +29,7 @@ oauth.register(
 
 GITHUB_REDIRECT_URL="http://127.0.0.1:8000/auth/github/callback"
 
+#Basic OAuth Github login logic
 @router.get("/github")
 async def github_login(request: Request):
     return await oauth.github.authorize_redirect(request, GITHUB_REDIRECT_URL)
@@ -41,7 +42,11 @@ async def github_callback(request: Request):
 
         return {
             "message": "Login successful",
+            "authenticated": True,  
             "access_token": token["access_token"],
+            "token_type": "bearer",
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"OAuth Error: {str(e)}")
+
+# TODO implement OAuth Github logic for supabase

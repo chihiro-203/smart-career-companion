@@ -54,6 +54,11 @@ async def login(user: UserLogin, db: Session = Depends(database.get_db)):
             raise HTTPException(status_code=400, detail="Invalid username or password")
     
     token = create_access_token(data={"sub": user.email})
-    return {"access_token": token, "token_type": "bearer"}
+    return {
+        "message": "Login successful",
+        "authenticated": True,  
+        "access_token": token["access_token"],
+        "token_type": "bearer",
+    }
 
    

@@ -34,28 +34,7 @@ router = APIRouter(
     tags=['auth']
 )
 
-# @router.get("/google")
-# async def google_login():
-#     auth_url = f"{os.getenv('SUPABASE_URL')}/auth/v1/authorize?provider=google&redirect_to={GOOGLE_REDIRECT_URL}"
-#     print(auth_url)
-#     return RedirectResponse(url=auth_url)
-
-# @router.get("/google/callback")
-# async def google_callback(request: Request):
-#     code = request.query_params.get("code")
-#     if not code:
-#         raise HTTPException(status_code=400, detail="Missing authorization code")
-    
-#     print(code)
-    
-#     # response = supabase.auth.exchange_code_for_session(code)
-#     # if "error" in response:
-#     #     raise HTTPException(status_code=400, detail=response["error"])
-    
-#     # user = response["user"]
-#     # session = response["session"]
-#     return {"message": "Login successful"}
-
+#Basic OAuth Google login logic
 @router.get("/google")
 async def google_login(request: Request):
     return await oauth.google.authorize_redirect(request, GOOGLE_REDIRECT_URL)
@@ -65,5 +44,12 @@ async def google_callback(request: Request):
     token = await oauth.google.authorize_access_token(request)
     user = token.get('userinfo')
 
-    return {"message": "Login successful", "user": user, "token": token}
+    return {
+        "message": "Login successful",
+        "authenticated": True,  
+        "access_token": token["access_token"],
+        "token_type": "bearer",
+    }
+
+# TODO implement OAuth Google logic for supabase
 

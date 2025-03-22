@@ -40,4 +40,7 @@ def signup(user: UserCreate, db: Session = Depends(database.get_db)):
         db.rollback()
         raise HTTPException(status_code=400, detail="User with this email already exists")
 
-    return {"message": "User registered successfully"}
+    return {
+        "message": "User registered successfully",
+        "authenticated": True, 
+    }
