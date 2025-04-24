@@ -1,0 +1,4 @@
+2025-04-22 21:46:17.252 | INFO     | routers.pdf_router:upload_pdf:18 - Received file: nathang_ITCSIU21233_Lab3.pdf
+2025-04-22 21:46:17.365 | ERROR    | routers.pdf_router:upload_pdf:35 - PDF processing failed: name 'supabase' is not defined
+2025-04-22 21:52:02.235 | INFO     | routers.pdf_router:upload_pdf:18 - Received file: nathang_ITCSIU21233_Lab3.pdf
+2025-04-22 21:52:03.039 | ERROR    | routers.pdf_router:upload_pdf:35 - PDF processing failed: {'statusCode': 403, 'error': Unauthorized, 'message': new row violates row-level security policy}

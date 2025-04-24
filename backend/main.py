@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv  # Import the load_dotenv function
 import google.generativeai as genai
 from core.database import Base, engine
+from routers import pdf_router
 
 # Load environment variables from .env file
 load_dotenv()
@@ -27,6 +28,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(pdf_router)
 
 @app.post("/generate")
 async def generate_content(user_input: str = Form(...)):
