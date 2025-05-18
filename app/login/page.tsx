@@ -3,28 +3,72 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { FaGithub, FaGoogle } from "react-icons/fa";
+import { useRouter } from "next/navigation";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import NotificationPopup from "../components/NotificationPopup";
 
-const RegisterPage = () => {
+const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false); // You already have this!
+  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const router = useRouter();
+  const supabase = createSupabaseBrowserClient();
 
-  const handleRegister = (e: React.FormEvent) => {
+  const showNotification = (message: string, type: 'success' | 'error' | 'info') => {
+    setNotification({ message, type });
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setNotification(null);
+    setLoading(true); 
 
     if (!email || !password) {
-      setError("All fields are required.");
+      showNotification("Email and password are required.", "error");
+      setLoading(false); 
       return;
     }
 
-    console.log("User registered: ", { email, password });
-    // TODO: Add Firebase Auth logic here
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password: password,
+    });
+
+    if (signInError) {
+      showNotification(signInError.message, "error");
+    } else {
+      router.push("/dashboard");
+      router.refresh();
+    }
+    setLoading(false); // Reset loading
+  };
+
+  const handleOAuthLogin = async (provider: "github" | "google") => {
+    setNotification(null);
+    setLoading(true); 
+    const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+
+    if (oauthError) {
+      showNotification(oauthError.message, "error");
+      setLoading(false); 
+    }
   };
 
   return (
     <div className="flex h-screen">
+       {notification && (
+        <NotificationPopup
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
       {/* Left Section */}
       <div className="w-1/2 bg-gray-900 text-white flex flex-col justify-between p-8 h-full">
         <h1 className="text-4xl font-bold">Smart Career Companion</h1>
@@ -41,32 +85,31 @@ const RegisterPage = () => {
           Fill in the form to access your account
         </p>
 
-        {error && <p className="text-red-500 mb-3">{error}</p>}
-
-        <form onSubmit={handleRegister} className="w-full max-w-lg space-y-4">
+        <form onSubmit={handleLogin} className="w-full max-w-lg space-y-4">
           <input
             type="email"
-            className="w-full p-2 border rounded-md bg-gray-100"
+            className="w-full p-2 border rounded-md bg-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
             placeholder="name@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            disabled={loading}
           />
-
           <input
             type="password"
-            className="w-full p-2 border rounded-md bg-gray-100"
+            className="w-full p-2 border rounded-md bg-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
             placeholder="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            disabled={loading} 
           />
-
           <button
             type="submit"
-            className="w-full p-2 bg-black text-white rounded-md hover:bg-gray-800"
+            className="w-full p-3 bg-black text-white rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={loading} 
           >
-            Log In
+            {loading ? "Logging in..." : "Log In"}
           </button>
         </form>
 
@@ -76,18 +119,25 @@ const RegisterPage = () => {
           <div className="flex-grow border-t border-gray-300"></div>
         </div>
 
-        {/* OAuth Buttons */}
         <div className="flex space-x-4">
-          <button className="p-2 border rounded-md flex items-center cursor-pointer">
-            <FaGithub className="mr-2" /> GitHub
+          <button
+            onClick={() => handleOAuthLogin("github")}
+            className="p-3 border rounded-md flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex-1"
+            disabled={loading}
+          >
+            {loading && <SpinnerIcon className="mr-2" />} <FaGithub className="mr-2" /> GitHub
           </button>
-          <button className="p-2 border rounded-md flex items-center cursor-pointer">
-            <FaGoogle className="mr-2" /> Google
+          <button
+            onClick={() => handleOAuthLogin("google")}
+            className="p-3 border rounded-md flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex-1"
+            disabled={loading}
+          >
+            {loading && <SpinnerIcon className="mr-2" />} <FaGoogle className="mr-2" /> Google
           </button>
         </div>
 
-        <p className="mt-4 text-center text-sm">
-          Don't have an account?{" "}
+        <p className="mt-6 text-center text-sm">
+          Don&apos;t have an account?{" "}
           <Link href="/signup" className="text-blue-500 hover:underline">
             Sign up
           </Link>
@@ -97,4 +147,28 @@ const RegisterPage = () => {
   );
 };
 
-export default RegisterPage;
+const SpinnerIcon = ({ className = "" }: { className?: string }) => (
+  <svg
+    className={`animate-spin h-5 w-5 text-white ${className}`}
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+  >
+    <circle
+      className="opacity-25"
+      cx="12"
+      cy="12"
+      r="10"
+      stroke="currentColor"
+      strokeWidth="4"
+    ></circle>
+    <path
+      className="opacity-75"
+      fill="currentColor"
+      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+    ></path>
+  </svg>
+);
+
+
+export default LoginPage;
