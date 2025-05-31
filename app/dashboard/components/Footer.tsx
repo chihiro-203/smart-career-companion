@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-800 text-gray-300 py-12">
+    <footer className="bg-gray-800 text-gray-300 pt-8">
       <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
         <div>
           <h2 className="text-2xl font-bold text-white mb-3">Logo</h2>
@@ -26,11 +26,11 @@ const Footer = () => {
             <li><Link href="/dashboard" className="hover:text-white">Home</Link></li>
             <li><Link href="/dashboard/resume" className="hover:text-white">Resume Scoring</Link></li>
             <li><Link href="/dashboard/job" className="hover:text-white">Job Suggestion</Link></li>
-            {/* <li><Link href="/contact" className="hover:text-white">Contact Us</Link></li> */}
+            <li><Link href="/dashboard/cover-letter" className="hover:text-white">Cover Letter Generator</Link></li>
           </ul>
         </div>
       </div>
-      <div className="mt-8 pt-8 border-t border-gray-700 text-center text-sm">
+      <div className="mt-8 py-4 border-t border-gray-700 text-center text-sm">
         <p>© {new Date().getFullYear()} Smart Career Companion. All rights reserved.</p>
       </div>
     </footer>

@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 
-export default function ResumePage() {
+export default function CoverLetterPage() {
   const [file, setFile] = useState<File | null>(null);
   const [message, setMessage] = useState<string>("Try uploading a file");
 
@@ -32,12 +32,13 @@ export default function ResumePage() {
     // Simulate upload
     await new Promise(resolve => setTimeout(resolve, 2000));
     setMessage(`${file.name} uploaded successfully! (Simulation)`);
+    // setFile(null); // Optionally clear file after upload
   };
 
 
   return (
     <div className="text-center py-10">
-      <h1 className="text-4xl font-bold mb-8">RESUME ANALYZER</h1>
+      <h1 className="text-4xl font-bold mb-8 uppercase">Cover Letter Generator</h1>
       <div className="max-w-2xl mx-auto bg-gray-50 p-8 rounded-lg shadow-lg">
         <div className="flex items-center justify-between border-2 border-dashed border-gray-300 p-6 rounded-md mb-4 bg-white">
           <span className="text-gray-500 truncate max-w-[calc(100%-150px)]">
@@ -55,7 +56,7 @@ export default function ResumePage() {
           />
         </div>
         {file && (
-            <p className="text-xs text-gray-500 mb-6">{/* cv.pdf placeholder, now handled by file.name */}</p>
+            <p className="text-xs text-gray-500 mb-6"></p>
         )}
         {file && (
             <button

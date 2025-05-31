@@ -2,31 +2,41 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { FaGithub, FaGoogle } from "react-icons/fa";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline"; // For password visibility
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import NotificationPopup from "../components/NotificationPopup";
+import NotificationPopup from "../components/NotificationPopup"; // Adjust path if needed
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false); // You already have this!
-  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [notification, setNotification] = useState<{
+    message: string;
+    type: "success" | "error" | "info";
+  } | null>(null);
   const router = useRouter();
   const supabase = createSupabaseBrowserClient();
 
-  const showNotification = (message: string, type: 'success' | 'error' | 'info') => {
+  const showNotification = (
+    message: string,
+    type: "success" | "error" | "info"
+  ) => {
     setNotification({ message, type });
   };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setNotification(null);
-    setLoading(true); 
+    setLoading(true);
 
     if (!email || !password) {
       showNotification("Email and password are required.", "error");
-      setLoading(false); 
+      setLoading(false);
       return;
     }
 
@@ -41,12 +51,13 @@ const LoginPage = () => {
       router.push("/dashboard");
       router.refresh();
     }
-    setLoading(false); // Reset loading
+    setLoading(false);
   };
 
   const handleOAuthLogin = async (provider: "github" | "google") => {
+    // OAuth login logic remains the same
     setNotification(null);
-    setLoading(true); 
+    setLoading(true);
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
@@ -56,119 +67,172 @@ const LoginPage = () => {
 
     if (oauthError) {
       showNotification(oauthError.message, "error");
-      setLoading(false); 
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex h-screen">
-       {notification && (
+    <div className="flex flex-col md:flex-row h-screen"> {/* Ensure flex-row for side-by-side */}
+      {notification && (
         <NotificationPopup
           message={notification.message}
           type={notification.type}
           onClose={() => setNotification(null)}
         />
       )}
-      {/* Left Section */}
-      <div className="w-1/2 bg-gray-900 text-white flex flex-col justify-between p-8 h-full">
-        <h1 className="text-4xl font-bold">Smart Career Companion</h1>
-        <p className="text-start text-gray-400 text-xl">
-          This is a short description about our project, which includes CV
-          Analyzer and Mock Interview.
-        </p>
+
+      {/* Left Section: Illustration - using your dark theme */}
+      <div className="w-full md:w-1/2 bg-gray-900 text-white flex flex-col items-center justify-center p-8 lg:p-12 order-1 md:order-1 h-1/2 md:h-full">
+        {/* Optional: Title for the illustration section */}
+        <div className="text-center mb-8 md:mb-12">
+          <h1 className="text-3xl lg:text-4xl font-bold text-gray-400">
+            Smart Career Companion
+          </h1>
+          <p className="text-md lg:text-lg text-gray-300 mt-2">
+            Unlock your professional potential.
+          </p>
+        </div>
+        <div className="w-full max-w-md lg:max-w-lg aspect-[4/3] relative">
+          <Image
+            src="/robotics.svg" // Your robotics.svg
+            alt="Career Companion Illustration"
+            layout="fill"
+            objectFit="contain"
+            priority
+          />
+        </div>
       </div>
 
-      {/* Right Section */}
-      <div className="w-1/2 flex flex-col justify-center items-center p-8">
-        <h2 className="text-2xl font-bold mb-2">Welcome back!</h2>
-        <p className="text-gray-500 mb-6">
-          Fill in the form to access your account
-        </p>
+      {/* Right Section: Login Form - using your lighter theme elements */}
+      <div className="w-full md:w-1/2 bg-white flex flex-col justify-center items-center p-8 sm:p-12 order-2 md:order-2 h-1/2 md:h-full overflow-y-auto">
+        <div className="w-full max-w-md">
+          <div className="text-left mb-10">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-800">Welcome back!</h2>
+            <p className="text-gray-500 mt-2">Nice to see you again!</p>
+          </div>
 
-        <form onSubmit={handleLogin} className="w-full max-w-lg space-y-4">
-          <input
-            type="email"
-            className="w-full p-2 border rounded-md bg-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
-            placeholder="name@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            disabled={loading}
-          />
-          <input
-            type="password"
-            className="w-full p-2 border rounded-md bg-gray-100 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
-            placeholder="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            disabled={loading} 
-          />
-          <button
-            type="submit"
-            className="w-full p-3 bg-black text-white rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={loading} 
-          >
-            {loading ? "Logging in..." : "Log In"}
-          </button>
-        </form>
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div>
+              <label htmlFor="email" className="sr-only">Email or phone number</label>
+              <input
+                id="email"
+                type="email"
+                name="email"
+                autoComplete="email"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none placeholder-gray-400 text-gray-900"
+                placeholder="Email or phone number"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={loading}
+              />
+            </div>
+            <div className="relative">
+              <label htmlFor="password" className="sr-only">Password</label>
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                name="password"
+                autoComplete="current-password"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none placeholder-gray-400 text-gray-900"
+                placeholder="Enter password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                disabled={loading}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 text-gray-500 hover:text-gray-700"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  <EyeSlashIcon className="h-5 w-5" />
+                ) : (
+                  <EyeIcon className="h-5 w-5" />
+                )}
+              </button>
+            </div>
 
-        <div className="w-full max-w-sm flex items-center my-4">
-          <div className="flex-grow border-t border-gray-300"></div>
-          <p className="mx-2 text-gray-500 text-sm">OR CONTINUE WITH</p>
-          <div className="flex-grow border-t border-gray-300"></div>
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center">
+                {/* Custom Switch for "Remember me" */}
+                <button
+                  type="button"
+                  onClick={() => setRememberMe(!rememberMe)}
+                  className={`${
+                    rememberMe ? 'bg-gray-600' : 'bg-gray-200'
+                  } relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500`}
+                  role="switch"
+                  aria-checked={rememberMe}
+                >
+                  <span className="sr-only">Remember me</span>
+                  <span
+                    className={`${
+                      rememberMe ? 'translate-x-6' : 'translate-x-1'
+                    } inline-block w-4 h-4 transform bg-white rounded-full transition-transform`}
+                  />
+                </button>
+                <label htmlFor="remember-me-button" onClick={() => setRememberMe(!rememberMe)} className="ml-2 block text-gray-700 cursor-pointer">
+                  Remember me
+                </label>
+              </div>
+              <Link href="/forgot-password" className="font-medium text-gray-600 hover:text-gray-500 hover:underline">
+                Forgot password?
+              </Link>
+            </div>
+
+            <button
+              type="submit"
+              className="w-full py-3 px-4 bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-700 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed transition-colors duration-150"
+              disabled={loading}
+            >
+              {loading ? "Logging in..." : "Log In"}
+            </button>
+          </form>
+
+          {/* OAuth Buttons (Optional - the Bangla Market design doesn't have them prominently) */}
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">Or continue with</span>
+              </div>
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <button
+                onClick={() => handleOAuthLogin("github")}
+                className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-60"
+                disabled={loading}
+              >
+                <span className="sr-only">Sign in with GitHub</span>
+                <FaGithub className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => handleOAuthLogin("google")}
+                className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-60"
+                disabled={loading}
+              >
+                <span className="sr-only">Sign in with Google</span>
+                <FaGoogle className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+
+          <p className="mt-10 text-center text-sm text-gray-600">
+            Don&apos;t have an account?{" "}
+            <Link href="/signup" className="font-medium text-gray-600 hover:text-gray-500 hover:underline">
+              Get Started
+            </Link>
+          </p>
         </div>
-
-        <div className="flex space-x-4">
-          <button
-            onClick={() => handleOAuthLogin("github")}
-            className="p-3 border rounded-md flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex-1"
-            disabled={loading}
-          >
-            {loading && <SpinnerIcon className="mr-2" />} <FaGithub className="mr-2" /> GitHub
-          </button>
-          <button
-            onClick={() => handleOAuthLogin("google")}
-            className="p-3 border rounded-md flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex-1"
-            disabled={loading}
-          >
-            {loading && <SpinnerIcon className="mr-2" />} <FaGoogle className="mr-2" /> Google
-          </button>
-        </div>
-
-        <p className="mt-6 text-center text-sm">
-          Don&apos;t have an account?{" "}
-          <Link href="/signup" className="text-blue-500 hover:underline">
-            Sign up
-          </Link>
-        </p>
       </div>
     </div>
   );
 };
-
-const SpinnerIcon = ({ className = "" }: { className?: string }) => (
-  <svg
-    className={`animate-spin h-5 w-5 text-white ${className}`}
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-  >
-    <circle
-      className="opacity-25"
-      cx="12"
-      cy="12"
-      r="10"
-      stroke="currentColor"
-      strokeWidth="4"
-    ></circle>
-    <path
-      className="opacity-75"
-      fill="currentColor"
-      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-    ></path>
-  </svg>
-);
-
 
 export default LoginPage;

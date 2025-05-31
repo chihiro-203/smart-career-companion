@@ -1,14 +1,11 @@
-// middleware.ts (or src/middleware.ts)
-import { createServerClient, type CookieOptions } from '@supabase/ssr'; // Use createServerClient
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export async function middleware(req: NextRequest) {
-  // We need to create a response object that we can modify (e.g. to set cookies)
-  // and return it from the middleware.
   let res = NextResponse.next({
     request: {
-      headers: new Headers(req.headers), // Pass along request headers
+      headers: new Headers(req.headers),
     },
   });
 
@@ -21,49 +18,19 @@ export async function middleware(req: NextRequest) {
           return req.cookies.get(name)?.value;
         },
         set(name: string, value: string, options: CookieOptions) {
-          // If the cookie is set, update the request cookies object.
-          // This is useful for Server Components.
-          req.cookies.set({
-            name,
-            value,
-            ...options,
-          });
-          // Also update the response cookies.
-          res = NextResponse.next({
-            request: {
-              headers: new Headers(req.headers),
-            },
-          });
-          res.cookies.set({
-            name,
-            value,
-            ...options,
-          });
+          req.cookies.set({ name, value, ...options });
+          res = NextResponse.next({ request: { headers: new Headers(req.headers) } });
+          res.cookies.set({ name, value, ...options });
         },
         remove(name: string, options: CookieOptions) {
-          // If the cookie is removed, update the request cookies object.
-          req.cookies.set({
-            name,
-            value: '',
-            ...options,
-          });
-          // Also update the response cookies.
-          res = NextResponse.next({
-            request: {
-              headers: new Headers(req.headers),
-            },
-          });
-          res.cookies.set({
-            name,
-            value: '',
-            ...options,
-          });
+          req.cookies.set({ name, value: '', ...options });
+          res = NextResponse.next({ request: { headers: new Headers(req.headers) } });
+          res.cookies.set({ name, value: '', ...options });
         },
       },
     }
   );
 
-  // Refresh session if expired - important!
   const { data: { session }, error } = await supabase.auth.getSession();
 
   if (error) {
@@ -72,21 +39,47 @@ export async function middleware(req: NextRequest) {
 
   const { pathname } = req.nextUrl;
 
-  // 1. If user is NOT signed in AND is trying to access a protected route
-  if (!session && pathname.startsWith('/')) {
+  // --- START OF MODIFICATIONS FOR ROOT REDIRECT ---
+
+  // 1. If user is NOT signed in AND is on the root path ('/')
+  if (!session && pathname === '/') {
     const url = req.nextUrl.clone();
     url.pathname = '/login';
+    console.log("MIDDLEWARE: No session, redirecting from root to login");
     return NextResponse.redirect(url);
   }
 
-  // 2. If user IS signed in AND is trying to access auth pages
+  // --- END OF MODIFICATIONS FOR ROOT REDIRECT ---
+
+
+  // 2. If user is NOT signed in AND is trying to access a protected route (e.g., /dashboard)
+  //    (Ensure this doesn't conflict with the root redirect if your root IS your dashboard conceptually)
+  if (!session && pathname.startsWith('/dashboard')) {
+    const url = req.nextUrl.clone();
+    url.pathname = '/login';
+    console.log("MIDDLEWARE: No session, redirecting from dashboard to login");
+    return NextResponse.redirect(url);
+  }
+
+  // 3. If user IS signed in AND is trying to access auth pages (login/signup)
   if (session && (pathname === '/login' || pathname === '/signup')) {
     const url = req.nextUrl.clone();
-    url.pathname = '/';
+    url.pathname = '/dashboard';
+    console.log("MIDDLEWARE: Session exists, redirecting from auth page to dashboard");
     return NextResponse.redirect(url);
   }
 
-  return res; // Return the (potentially modified) response
+  // 4. If user IS signed in AND is on the root path ('/'), redirect to dashboard
+  //    (This prevents authenticated users from seeing a generic root page if one exists)
+  if (session && pathname === '/') {
+    const url = req.nextUrl.clone();
+    url.pathname = '/dashboard';
+    console.log("MIDDLEWARE: Session exists, redirecting from root to dashboard");
+    return NextResponse.redirect(url);
+  }
+
+
+  return res;
 }
 
 export const config = {
