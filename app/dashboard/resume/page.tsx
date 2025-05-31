@@ -1,6 +1,7 @@
 // app/dashboard/resume/page.tsx
-"use client"; // Likely a client component for file uploads etc.
+"use client";
 
+import { useTheme } from "@/app/contexts/ThemeContext";
 import {
   AcademicCapIcon,
   ArrowUpTrayIcon,
@@ -79,6 +80,7 @@ interface DetailedAnalysisResult {
 }
 
 export default function ResumePage() {
+  const { selectedTheme } = useTheme();
   const [cvFile, setCvFile] = useState<File | null>(null);
   const [jobDescription, setJobDescription] = useState<string>("");
   const [fileName, setFileName] = useState<string>("No CV selected");
@@ -144,13 +146,13 @@ export default function ResumePage() {
     return (
       <div>
         {title && (
-          <h4 className="text-md font-semibold text-gray-600 mb-1">{title}</h4>
+          <h4 className={`text-md font-semibold text-${selectedTheme}-600 mb-1`}>{title}</h4>
         )}
         <ul className="list-disc list-inside space-y-1 pl-1">
           {items.map((item, index) => (
             <li
               key={index}
-              className={`text-sm ${itemClass || "text-gray-700"}`}
+              className={`text-sm ${itemClass || `text-${selectedTheme}-700`}`}
             >
               {item}
             </li>
@@ -164,8 +166,8 @@ export default function ResumePage() {
     text: string;
     type: "matched" | "missing" | "additional";
   }> = ({ text, type }) => {
-    let bgColor = "bg-gray-100";
-    let textColor = "text-gray-700";
+    let bgColor = `bg-${selectedTheme}-100`;
+    let textColor = `text-${selectedTheme}-700`;
 
     if (type === "matched") {
       bgColor = "bg-green-100";
@@ -192,15 +194,14 @@ export default function ResumePage() {
   return (
     <div className="py-10 px-4">
       <div className="text-center mb-10">
-        <h1 className="text-4xl font-bold text-gray-800">
-          <span className="text-gray-600">Resume</span> Analyzer
+        <h1 className={`text-4xl font-bold text-${selectedTheme}-800`}>
+          <span className={`text-${selectedTheme}-600`}>Resume</span> Analyzer
         </h1>
-        <p className="text-lg text-gray-600 mt-2">
+        <p className={`text-lg text-${selectedTheme}-600 mt-2`}>
           Upload your CV and paste a job description for a detailed analysis.
         </p>
       </div>
 
-      {/* Form for CV Upload and Job Description */}
       <form
         onSubmit={handleAnalyze}
         className="max-w-3xl mx-auto bg-white p-6 sm:p-8 rounded-xl shadow-xl mb-10 space-y-6"
@@ -208,20 +209,20 @@ export default function ResumePage() {
         <div>
           <label
             htmlFor="cv-upload"
-            className="block text-md font-medium text-gray-700 mb-1"
+            className={`block text-md font-medium text-${selectedTheme}-700 mb-1`}
           >
             Upload Your CV (PDF only)
           </label>
-          <div className="mt-1 flex items-center justify-between border-2 border-dashed border-gray-300 p-4 rounded-lg bg-gray-50">
+          <div className={`mt-1 flex items-center justify-between border-2 border-dashed border-${selectedTheme}-300 p-4 rounded-lg bg-${selectedTheme}-50`}>
             <span
-              className="text-gray-600 truncate max-w-[calc(100%-150px)]"
+              className={`text-${selectedTheme}-600 truncate max-w-[calc(100%-150px)]`}
               title={fileName}
             >
               {fileName}
             </span>
             <label
               htmlFor="cv-upload-input"
-              className="cursor-pointer bg-gray-700 hover:bg-gray-800 text-white font-semibold py-2 px-4 rounded-md text-sm transition"
+              className={`cursor-pointer bg-${selectedTheme}-700 hover:bg-${selectedTheme}-800 text-white font-semibold py-2 px-4 rounded-md text-sm transition`}
             >
               <ArrowUpTrayIcon className="h-5 w-5 inline-block mr-2" /> Upload
               CV
@@ -235,14 +236,14 @@ export default function ResumePage() {
               disabled={isProcessing}
             />
           </div>
-          <p className="mt-1 text-xs text-gray-500">{uploadMessage}</p>
+          <p className={`mt-1 text-xs text-${selectedTheme}-500`}>{uploadMessage}</p>
         </div>
 
         {showJdInput && (
           <div>
             <label
               htmlFor="job-description"
-              className="block text-md font-medium text-gray-700 mb-1"
+              className={`block text-md font-medium text-${selectedTheme}-700 mb-1`}
             >
               Paste Job Description
             </label>
@@ -250,14 +251,14 @@ export default function ResumePage() {
               id="job-description"
               name="jobDescription"
               rows={8}
-              className="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-gray-500 focus:border-gray-500 sm:text-sm bg-gray-50 placeholder-gray-400"
+              className={`mt-1 block w-full p-3 border border-${selectedTheme}-300 rounded-md shadow-sm focus:ring-${selectedTheme}-500 focus:border-${selectedTheme}-500 sm:text-sm bg-${selectedTheme}-50 placeholder-${selectedTheme}-400`}
               placeholder="Paste the full job description here..."
               value={jobDescription}
               onChange={(e) => setJobDescription(e.target.value)}
               required
               disabled={isProcessing}
             />
-            <p className="mt-1 text-xs text-gray-500">
+            <p className={`mt-1 text-xs text-${selectedTheme}-500`}>
               Ensure the job description is complete for accurate analysis.
             </p>
           </div>
@@ -267,7 +268,7 @@ export default function ResumePage() {
           <button
             type="submit"
             disabled={isProcessing || !cvFile || !jobDescription.trim()}
-            className="w-full bg-gray-700 hover:bg-gray-800 text-white font-bold py-3 px-4 rounded-md transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            className={`w-full bg-${selectedTheme}-700 hover:bg-${selectedTheme}-800 text-white font-bold py-3 px-4 rounded-md transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center`}
           >
             {isProcessing ? (
               <>
@@ -303,11 +304,10 @@ export default function ResumePage() {
         )}
       </form>
 
-      {/* Analysis Results Section */}
       {isProcessing && (
-        <div className="text-center text-gray-700 py-10">
+        <div className={`text-center text-${selectedTheme}-700 py-10`}>
           <svg
-            className="animate-spin h-10 w-10 text-gray-600 mx-auto mb-4"
+            className={`animate-spin h-10 w-10 text-${selectedTheme}-600 mx-auto mb-4`}
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
@@ -333,28 +333,27 @@ export default function ResumePage() {
 
       {analysisResult && !isProcessing && (
         <div className="max-w-4xl mx-auto bg-white p-6 sm:p-8 rounded-xl shadow-2xl space-y-10">
-          <div className="text-center border-b border-gray-200 pb-6 mb-8">
-            <h2 className="text-3xl font-bold text-gray-800">
+          <div className={`text-center border-b border-${selectedTheme}-200 pb-6 mb-8`}>
+            <h2 className={`text-3xl font-bold text-${selectedTheme}-800`}>
               Analysis Report
             </h2>
             {analysisResult.candidateName &&
               analysisResult.candidateName !== "N/A" && (
-                <p className="text-lg text-gray-600 mt-1">
+                <p className={`text-lg text-${selectedTheme}-600 mt-1`}>
                   For: {analysisResult.candidateName}
                 </p>
               )}
             {analysisResult.jobTitleAnalyzed && (
-              <p className="text-md text-gray-500">
+              <p className={`text-md text-${selectedTheme}-500`}>
                 Against Role: {analysisResult.jobTitleAnalyzed}
               </p>
             )}
           </div>
 
-          {/* Overall Score & Summary */}
           <div className="grid md:grid-cols-5 gap-6 items-start">
             {analysisResult.overallMatchScore !== undefined && (
-              <div className="md:col-span-2 p-6 bg-gray-50 rounded-lg text-center shadow">
-                <h3 className="text-xl font-semibold text-gray-700 mb-2">
+              <div className={`md:col-span-2 p-6 bg-${selectedTheme}-50 rounded-lg text-center shadow`}>
+                <h3 className={`text-xl font-semibold text-${selectedTheme}-700 mb-2`}>
                   Overall Match
                 </h3>
                 <p
@@ -365,7 +364,7 @@ export default function ResumePage() {
                         : analysisResult.overallMatchScore >= 50
                         ? "text-yellow-600"
                         : "text-red-600"
-                      : "text-gray-600"
+                      : `text-${selectedTheme}-600`
                   }`}
                 >
                   {typeof analysisResult.overallMatchScore === "number"
@@ -379,30 +378,29 @@ export default function ResumePage() {
               <div
                 className={`p-6 rounded-lg ${
                   analysisResult.overallMatchScore !== undefined
-                    ? "md:col-span-3 bg-slate-50"
-                    : "md:col-span-5 bg-gray-50"
+                    ? "md:col-span-3 bg-slate-50" // Slate for summary to differentiate, or use selectedTheme-50
+                    : `md:col-span-5 bg-${selectedTheme}-50`
                 }`}
               >
-                <h3 className="text-xl font-semibold text-gray-700 mb-2 flex items-center">
-                  <InformationCircleIcon className="h-6 w-6 mr-2 text-gray-500" />{" "}
+                <h3 className={`text-xl font-semibold text-${selectedTheme}-700 mb-2 flex items-center`}>
+                  <InformationCircleIcon className={`h-6 w-6 mr-2 text-${selectedTheme}-500`} />{" "}
                   Executive Summary
                 </h3>
-                <p className="text-gray-600 text-sm leading-relaxed">
+                <p className={`text-${selectedTheme}-600 text-sm leading-relaxed`}>
                   {analysisResult.summary}
                 </p>
               </div>
             )}
           </div>
 
-          {/* Skill Analysis */}
           {analysisResult.skillAnalysis && (
             <section>
-              <h3 className="text-2xl font-semibold text-gray-800 mb-4 pt-6 border-t border-gray-200">
+              <h3 className={`text-2xl font-semibold text-${selectedTheme}-800 mb-4 pt-6 border-t border-${selectedTheme}-200`}>
                 Skill Analysis
               </h3>
-              <div className="space-y-4 p-4 bg-gray-50 rounded-lg shadow-sm">
+              <div className={`space-y-4 p-4 bg-${selectedTheme}-50 rounded-lg shadow-sm`}>
                 <div>
-                  <h4 className="text-md font-semibold text-gray-700 mb-2">
+                  <h4 className={`text-md font-semibold text-${selectedTheme}-700 mb-2`}>
                     Matched Skills:
                   </h4>
                   {analysisResult.skillAnalysis.matchedSkills &&
@@ -417,13 +415,13 @@ export default function ResumePage() {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-gray-500">
+                    <p className={`text-sm text-${selectedTheme}-500`}>
                       No direct skill matches found.
                     </p>
                   )}
                 </div>
                 <div>
-                  <h4 className="text-md font-semibold text-gray-700 mb-2">
+                  <h4 className={`text-md font-semibold text-${selectedTheme}-700 mb-2`}>
                     Missing Skills (from JD):
                   </h4>
                   {analysisResult.skillAnalysis.missingSkills &&
@@ -438,7 +436,7 @@ export default function ResumePage() {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-gray-500">
+                    <p className={`text-sm text-${selectedTheme}-500`}>
                       All required skills appear to be covered or not specified
                       in JD.
                     </p>
@@ -446,20 +444,19 @@ export default function ResumePage() {
                 </div>
                 {renderList(
                   analysisResult.skillAnalysis.additionalSkillsFromCV,
-                  "text-blue-700",
+                  "text-blue-700", // Keep blue for distinction or make themeable if desired
                   "Additional Skills from CV:"
                 )}
               </div>
             </section>
           )}
 
-          {/* Experience Analysis */}
           {analysisResult.experienceAnalysis && (
             <section>
-              <h3 className="text-2xl font-semibold text-gray-800 mb-4 pt-6 border-t border-gray-200">
+              <h3 className={`text-2xl font-semibold text-${selectedTheme}-800 mb-4 pt-6 border-t border-${selectedTheme}-200`}>
                 Experience Analysis
               </h3>
-              <div className="p-4 bg-gray-50 rounded-lg shadow-sm space-y-3">
+              <div className={`p-4 bg-${selectedTheme}-50 rounded-lg shadow-sm space-y-3`}>
                 <p className="text-sm">
                   <strong>JD Requires:</strong>{" "}
                   {analysisResult.experienceAnalysis.requiredExperienceYears}{" "}
@@ -485,13 +482,13 @@ export default function ResumePage() {
                   (role, i) => (
                     <div
                       key={i}
-                      className="text-sm border-l-4 border-gray-300 pl-3 py-1"
+                      className={`text-sm border-l-4 border-${selectedTheme}-300 pl-3 py-1`}
                     >
                       <p>
                         <strong>{role.title}</strong> at {role.company} (
                         {role.duration})
                       </p>
-                      <p className="text-gray-600 italic text-xs">
+                      <p className={`text-${selectedTheme}-600 italic text-xs`}>
                         {role.alignmentNotes}
                       </p>
                     </div>
@@ -499,22 +496,21 @@ export default function ResumePage() {
                 )}
                 {renderList(
                   analysisResult.experienceAnalysis.experienceGaps,
-                  "text-red-700",
+                  "text-red-700", // Keep red for distinction
                   "Experience Gaps Noted:"
                 )}
               </div>
             </section>
           )}
 
-          {/* Education & Certifications */}
-          <div className="grid md:grid-cols-2 gap-6 pt-6 border-t border-gray-200">
+          <div className={`grid md:grid-cols-2 gap-6 pt-6 border-t border-${selectedTheme}-200`}>
             {analysisResult.educationAnalysis && (
               <section>
-                <h3 className="text-xl font-semibold text-gray-800 mb-3 flex items-center">
-                  <AcademicCapIcon className="h-6 w-6 mr-2 text-gray-500" />
+                <h3 className={`text-xl font-semibold text-${selectedTheme}-800 mb-3 flex items-center`}>
+                  <AcademicCapIcon className={`h-6 w-6 mr-2 text-${selectedTheme}-500`} />
                   Education
                 </h3>
-                <div className="p-4 bg-gray-50 rounded-lg shadow-sm space-y-2 text-sm">
+                <div className={`p-4 bg-${selectedTheme}-50 rounded-lg shadow-sm space-y-2 text-sm`}>
                   <p>
                     <strong>JD Requires:</strong>{" "}
                     {analysisResult.educationAnalysis.requiredEducation}
@@ -535,7 +531,7 @@ export default function ResumePage() {
                     </span>
                   </p>
                   {analysisResult.educationAnalysis.notes && (
-                    <p className="text-gray-600 italic text-xs">
+                    <p className={`text-${selectedTheme}-600 italic text-xs`}>
                       Note: {analysisResult.educationAnalysis.notes}
                     </p>
                   )}
@@ -544,31 +540,31 @@ export default function ResumePage() {
             )}
             {analysisResult.certificationAnalysis && (
               <section>
-                <h3 className="text-xl font-semibold text-gray-800 mb-3 flex items-center">
-                  <ClipboardDocumentCheckIcon className="h-6 w-6 mr-2 text-gray-500" />
+                <h3 className={`text-xl font-semibold text-${selectedTheme}-800 mb-3 flex items-center`}>
+                  <ClipboardDocumentCheckIcon className={`h-6 w-6 mr-2 text-${selectedTheme}-500`} />
                   Certifications
                 </h3>
-                <div className="p-4 bg-gray-50 rounded-lg shadow-sm space-y-2 text-sm">
+                <div className={`p-4 bg-${selectedTheme}-50 rounded-lg shadow-sm space-y-2 text-sm`}>
                   {renderList(
                     analysisResult.certificationAnalysis
                       .desiredCertificationsFromJD,
-                    "",
+                    `text-${selectedTheme}-700`, // Use theme color
                     "Desired from JD:"
                   )}
                   {renderList(
                     analysisResult.certificationAnalysis
                       .candidateCertificationsFromCV,
-                    "",
+                    `text-${selectedTheme}-700`, // Use theme color
                     "Found in CV:"
                   )}
                   {renderList(
                     analysisResult.certificationAnalysis.matchedCertifications,
-                    "text-green-700",
+                    "text-green-700", // Keep green for distinction
                     "Matched/Related:"
                   )}
                   {renderList(
                     analysisResult.certificationAnalysis.missingCertifications,
-                    "text-red-700",
+                    "text-red-700", // Keep red for distinction
                     "Missing from JD:"
                   )}
                 </div>
@@ -578,56 +574,56 @@ export default function ResumePage() {
 
           {renderList(
             analysisResult.strengths,
-            "text-green-700",
+            "text-green-700", // Keep green for strengths
             "Key Strengths:"
           ) && (
-            <section className="pt-6 border-t border-gray-200">
-              <h3 className="text-xl font-semibold text-gray-800 mb-3 flex items-center">
+            <section className={`pt-6 border-t border-${selectedTheme}-200`}>
+              <h3 className={`text-xl font-semibold text-${selectedTheme}-800 mb-3 flex items-center`}>
                 <SparklesIcon className="h-6 w-6 mr-2 text-green-500" />
                 Key Strengths
               </h3>
-              {renderList(analysisResult.strengths, "text-gray-700")}
+              {renderList(analysisResult.strengths, `text-${selectedTheme}-700`)}
             </section>
           )}
           {renderList(
             analysisResult.areasForImprovementOrClarification,
-            "text-yellow-700",
+            "text-yellow-700", // Keep yellow for areas of improvement
             "Areas for Improvement/Clarification:"
           ) && (
-            <section className="pt-6 border-t border-gray-200">
-              <h3 className="text-xl font-semibold text-gray-800 mb-3 flex items-center">
+            <section className={`pt-6 border-t border-${selectedTheme}-200`}>
+              <h3 className={`text-xl font-semibold text-${selectedTheme}-800 mb-3 flex items-center`}>
                 <ExclamationTriangleIcon className="h-6 w-6 mr-2 text-yellow-500" />
                 Areas for Improvement/Clarification
               </h3>
               {renderList(
                 analysisResult.areasForImprovementOrClarification,
-                "text-gray-700"
+                `text-${selectedTheme}-700`
               )}
             </section>
           )}
           {renderList(
             analysisResult.questionsToAskCandidate,
-            "text-blue-700",
+            "text-blue-700", // Keep blue for questions
             "Suggested Interview Questions:"
           ) && (
-            <section className="pt-6 border-t border-gray-200">
-              <h3 className="text-xl font-semibold text-gray-800 mb-3 flex items-center">
+            <section className={`pt-6 border-t border-${selectedTheme}-200`}>
+              <h3 className={`text-xl font-semibold text-${selectedTheme}-800 mb-3 flex items-center`}>
                 <QuestionMarkCircleIcon className="h-6 w-6 mr-2 text-blue-500" />
                 Suggested Interview Questions
               </h3>
               {renderList(
                 analysisResult.questionsToAskCandidate,
-                "text-gray-700"
+                `text-${selectedTheme}-700`
               )}
             </section>
           )}
 
           {analysisResult.finalRecommendation && (
-            <div className="mt-8 pt-6 border-t border-gray-200 p-4 bg-gray-600 text-white rounded-lg shadow-lg">
+            <div className={`mt-8 pt-6 border-t border-${selectedTheme}-200 p-4 bg-${selectedTheme}-600 text-white rounded-lg shadow-lg`}>
               <h3 className="text-xl font-semibold mb-2 text-center">
                 Final Recommendation
               </h3>
-              <p className="text-gray-100 text-center text-lg">
+              <p className={`text-${selectedTheme}-100 text-center text-lg`}> {/* Themed light text on dark bg */}
                 {analysisResult.finalRecommendation}
               </p>
             </div>

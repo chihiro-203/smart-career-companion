@@ -15,6 +15,7 @@ import {
   UserIcon as UserSolidIcon,
   TagIcon,
 } from "@heroicons/react/24/outline";
+import { useTheme } from "../contexts/ThemeContext";
 
 // Reusable Feature Card (more styled)
 interface FeatureCardProps {
@@ -29,24 +30,25 @@ const FeatureCard: React.FC<FeatureCardProps> = ({
   icon,
   link,
 }) => {
+  const { selectedTheme } = useTheme();
   return (
     <Link
       href={link}
       className="group p-6 md:p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:-translate-y-1 h-full flex flex-col"
     >
       <div className="flex items-center mb-5">
-        <span className="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-xl bg-gray-500 text-white mr-5 group-hover:bg-gray-600 transition-colors">
+        <span className={`flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-xl bg-${selectedTheme}-500 text-white mr-5 group-hover:bg-${selectedTheme}-600 transition-colors`}>
           <div className="h-6 w-6">{icon}</div>
         </span>
-        <h3 className="text-xl lg:text-2xl font-semibold text-gray-900 group-hover:text-gray-600 transition-colors">
+        <h3 className={`text-xl lg:text-2xl font-semibold text-${selectedTheme}-900 group-hover:text-${selectedTheme}-600 transition-colors`}>
           {title}
         </h3>
       </div>
-      <p className="text-gray-600 text-sm md:text-base mb-5 flex-grow">
+      <p className={`text-${selectedTheme}-600 text-sm md:text-base mb-5 flex-grow`}>
         {description}
       </p>
       <div className="mt-auto">
-        <span className="text-gray-600 group-hover:text-gray-700 font-semibold flex items-center text-sm">
+        <span className={`text-${selectedTheme}-600 group-hover:text-${selectedTheme}-700 font-semibold flex items-center text-sm`}>
           Learn More
           <ArrowRightIcon className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
         </span>
@@ -87,6 +89,7 @@ const testimonials = [
 ];
 
 export default function DashboardHomePage() {
+  const { selectedTheme } = useTheme();
   const [contactForm, setContactForm] = useState({
     name: "",
     email: "",
@@ -124,20 +127,20 @@ export default function DashboardHomePage() {
   ];
 
   return (
-    <div className="text-gray-800 overflow-x-hidden">
+    <div className={`text-${selectedTheme}-800 overflow-x-hidden`}>
       {/* Section 1: Hero */}
-      <section className="relative py-20 md:py-32 bg-gray-50 rounded">
+      <section className={`relative py-20 md:py-32 bg-${selectedTheme}-50 rounded`}>
         <div className="container mx-auto px-6 text-center relative z-10">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-gray-900 mb-6">
-            Smart Career <span className="text-gray-600">Companion</span>
+          <h1 className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-${selectedTheme}-900 mb-6`}>
+            Smart Career <span className={`"text-${selectedTheme}-600"`}>Companion</span>
           </h1>
-          <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto mb-10">
+          <p className={`text-lg md:text-xl text-${selectedTheme}-600 max-w-3xl mx-auto mb-10`}>
             Empowering your journey with AI-driven insights for resume
             perfection, job matching, and compelling cover letters.
           </p>
           <Link
             href="/dashboard/resume"
-            className="inline-block bg-gray-700 hover:bg-gray-80 text-white font-semibold py-3 px-8 rounded-lg text-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+            className={`inline-block bg-${selectedTheme}-700 hover:bg-${selectedTheme}-80 text-white font-semibold py-3 px-8 rounded-lg text-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105`}
           >
             Get Started Now
           </Link>
@@ -148,10 +151,10 @@ export default function DashboardHomePage() {
       <section className="py-16 md:py-24">
         <div className="container mx-auto px-6">
           <div className="text-center mb-12 md:mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className={`text-3xl md:text-4xl font-bold text-${selectedTheme}-900 mb-4`}>
               Elevate Your Career Effortlessly
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className={`text-lg text-${selectedTheme}-600 max-w-2xl mx-auto`}>
               Our suite of intelligent tools simplifies your job search and
               professional development.
             </p>
@@ -180,22 +183,22 @@ export default function DashboardHomePage() {
       </section>
 
       {/* Section 3: How It Works */}
-      <section className="py-16 md:py-24 bg-gray-50">
+      <section className={`py-16 md:py-24 bg-${selectedTheme}-50`}>
         <div className="container mx-auto px-6">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <span className="inline-block p-3 bg-gray-100 text-gray-600 rounded-full mb-4">
+              <span className={`inline-block p-3 bg-${selectedTheme}-100 text-${selectedTheme}-600 rounded-full mb-4`}>
                 <SparklesIcon className="h-8 w-8" />
               </span>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+              <h2 className={`text-3xl md:text-4xl font-bold text-${selectedTheme}-900 mb-6`}>
                 AI-Powered Career Advancement
               </h2>
-              <p className="text-lg text-gray-600 mb-4">
+              <p className={`text-lg text-${selectedTheme}-600 mb-4`}>
                 Leverage the power of artificial intelligence to gain a
                 competitive edge. Our tools analyze vast amounts of data to
                 provide you with actionable recommendations.
               </p>
-              <ul className="space-y-3 text-gray-600">
+              <ul className={`space-y-3 text-${selectedTheme}-600`}>
                 <li className="flex items-start">
                   <ArrowRightIcon className="h-5 w-5 text-black mr-2 mt-1 flex-shrink-0" />
                   Personalized job feeds based on deep skill analysis.
@@ -225,12 +228,12 @@ export default function DashboardHomePage() {
       {/* Section 4: Tech Stack */}
       <section className="pt-16 md:pt-20">
         <div className="container mx-auto px-6 text-center">
-          <h2 className="text-2xl font-semibold text-gray-500 mb-8">
+          <h2 className={`text-2xl font-semibold text-${selectedTheme}-500 mb-8`}>
             Built with Leading Technologies
           </h2>
           <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-4">
             {techStack.map((tech) => (
-              <span key={tech} className="text-gray-600 font-medium">
+              <span key={tech} className={`text-${selectedTheme}-600 font-medium`}>
                 {tech}
               </span>
             ))}
@@ -242,13 +245,13 @@ export default function DashboardHomePage() {
       <section className="py-16 md:py-24">
         <div className="container mx-auto px-6">
           <div className="text-center mb-12 md:mb-16">
-            <span className="inline-block p-3 bg-gray-100 text-gray-600 rounded-full mb-4">
+            <span className={`inline-block p-3 bg-${selectedTheme}-100 text-${selectedTheme}-600 rounded-full mb-4`}>
               <ChatBubbleLeftRightIcon className="h-8 w-8" />
             </span>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className={`text-3xl md:text-4xl font-bold text-${selectedTheme}-900 mb-4`}>
               Loved by Professionals
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className={`text-lg text-${selectedTheme}-600 max-w-2xl mx-auto`}>
               Hear from individuals who&apos;ve transformed their career
               prospects with Smart Career Companion.
             </p>
@@ -267,14 +270,14 @@ export default function DashboardHomePage() {
                   />
                 </div>
 
-                <p className="text-gray-600 italic text-center mb-6 text-md flex-grow leading-relaxed">
+                <p className={`text-${selectedTheme}-600 italic text-center mb-6 text-md flex-grow leading-relaxed`}>
                   &quot;{testimonial.quote}&quot;
                 </p>
-                <div className="mt-auto text-center border-t border-gray-200 pt-4">
-                  <p className="font-semibold text-gray-900">
+                <div className={`mt-auto text-center border-t border-${selectedTheme}-200 pt-4`}>
+                  <p className={`font-semibold text-${selectedTheme}-900`}>
                     {testimonial.name}
                   </p>
-                  <p className="text-sm text-gray-400 font-medium">
+                  <p className={`text-sm text-${selectedTheme}-400 font-medium`}>
                     {testimonial.role}
                   </p>
                 </div>
@@ -285,29 +288,29 @@ export default function DashboardHomePage() {
       </section>
 
       {/* Section 6: Contact Us */}
-      <section className="py-16 md:py-24 bg-gradient-to-br bg-gray-50 text-white">
+      <section className={`py-16 md:py-24 bg-gradient-to-br bg-${selectedTheme}-50 text-white`}>
         <div className="container mx-auto px-6">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 text-black">
               Contact Us
             </h2>
-            <p className="text-lg text-gray-700 mb-10">
+            <p className={`text-lg text-${selectedTheme}-700 mb-10`}>
               We&apos;re here to answer your questions or discuss how Smart
               Career Companion can assist you.
             </p>
           </div>
-          <div className="max-w-2xl mx-auto bg-white p-8 sm:p-10 rounded-2xl shadow-2xl text-gray-800">
+          <div className={`max-w-2xl mx-auto bg-white p-8 sm:p-10 rounded-2xl shadow-2xl text-${selectedTheme}-800`}>
             <form onSubmit={handleContactSubmit} className="space-y-6">
               <div>
                 <label
                   htmlFor="name"
-                  className="block text-sm font-medium text-gray-700 mb-1"
+                  className={`block text-sm font-medium text-${selectedTheme}-700 mb-1`}
                 >
                   Full Name
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <UserSolidIcon className="h-5 w-5 text-gray-400" />
+                    <UserSolidIcon className={`h-5 w-5 text-${selectedTheme}-400`} />
                   </div>
                   <input
                     type="text"
@@ -316,7 +319,7 @@ export default function DashboardHomePage() {
                     value={contactForm.name}
                     onChange={handleContactChange}
                     required
-                    className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm"
+                    className={`block w-full pl-10 pr-3 py-2.5 border border-${selectedTheme}-300 rounded-md shadow-sm focus:outline-none focus:ring-${selectedTheme}-500 focus:border-${selectedTheme}-500 sm:text-sm`}
                     placeholder="Your Name"
                   />
                 </div>
@@ -324,13 +327,13 @@ export default function DashboardHomePage() {
               <div>
                 <label
                   htmlFor="email"
-                  className="block text-sm font-medium text-gray-700 mb-1"
+                  className={`block text-sm font-medium text-${selectedTheme}-700 mb-1`}
                 >
                   Email Address
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <EnvelopeIcon className="h-5 w-5 text-gray-400" />
+                    <EnvelopeIcon className={`h-5 w-5 text-${selectedTheme}-400`} />
                   </div>
                   <input
                     type="email"
@@ -339,7 +342,7 @@ export default function DashboardHomePage() {
                     value={contactForm.email}
                     onChange={handleContactChange}
                     required
-                    className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm"
+                    className={`block w-full pl-10 pr-3 py-2.5 border border-${selectedTheme}-300 rounded-md shadow-sm focus:outline-none focus:ring-${selectedTheme}-500 focus:border-${selectedTheme}-500 sm:text-sm`}
                     placeholder="you@example.com"
                   />
                 </div>
@@ -347,13 +350,13 @@ export default function DashboardHomePage() {
               <div>
                 <label
                   htmlFor="subject"
-                  className="block text-sm font-medium text-gray-700 mb-1"
+                  className={`block text-sm font-medium text-${selectedTheme}-700 mb-1`}
                 >
                   Subject
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <TagIcon className="h-5 w-5 text-gray-400" />
+                    <TagIcon className={`h-5 w-5 text-${selectedTheme}-400`} />
                   </div>
                   <input
                     type="text"
@@ -362,7 +365,7 @@ export default function DashboardHomePage() {
                     value={contactForm.subject}
                     onChange={handleContactChange}
                     required
-                    className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm"
+                    className={`block w-full pl-10 pr-3 py-2.5 border border-${selectedTheme}-300 rounded-md shadow-sm focus:outline-none focus:ring-${selectedTheme}-500 focus:border-${selectedTheme}-500 sm:text-sm`}
                     placeholder="Inquiry about..."
                   />
                 </div>
@@ -370,7 +373,7 @@ export default function DashboardHomePage() {
               <div>
                 <label
                   htmlFor="message"
-                  className="block text-sm font-medium text-gray-700 mb-1"
+                  className={`block text-sm font-medium text-${selectedTheme}-700 mb-1`}
                 >
                   Message
                 </label>
@@ -381,7 +384,7 @@ export default function DashboardHomePage() {
                   value={contactForm.message}
                   onChange={handleContactChange}
                   required
-                  className="block w-full p-2.5 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm"
+                  className={`block w-full p-2.5 border border-${selectedTheme}-300 rounded-md shadow-sm focus:outline-none focus:ring-${selectedTheme}-500 focus:border-${selectedTheme}-500 sm:text-sm`}
                   placeholder="Your message..."
                 ></textarea>
               </div>
@@ -389,7 +392,7 @@ export default function DashboardHomePage() {
                 <button
                   type="submit"
                   disabled={formSubmitting}
-                  className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-${selectedTheme}-600 hover:bg-${selectedTheme}-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${selectedTheme}-500 disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
                   {formSubmitting ? "Sending..." : "Send Message"}
                 </button>

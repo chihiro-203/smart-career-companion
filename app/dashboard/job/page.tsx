@@ -16,7 +16,7 @@ export default function JobPage() {
       } else {
         setFile(null);
         setMessage("Please upload a PDF file.");
-        alert("Please upload a PDF file."); // Simple alert
+        alert("Please upload a PDF file.");
       }
     }
   };
