@@ -10,12 +10,28 @@ import { useTheme } from "@/app/contexts/ThemeContext";
 
 const getTailwindColorValue = (colorName: string): string => {
   const colorMap: { [key: string]: string } = {
-    red: "#EF4444", orange: "#F97316", amber: "#F59E0B", yellow: "#EAB308",
-    lime: "#84CC16", green: "#22C55E", emerald: "#10B981", teal: "#14B8A6",
-    cyan: "#06B6D4", sky: "#0EA5E9", blue: "#3B82F6", indigo: "#6366F1",
-    violet: "#8B5CF6", purple: "#A855F7", fuchsia: "#D946EF", pink: "#EC4899",
-    rose: "#F43F5E", slate: "#64748B", gray: "#6B7280", zinc: "#71717A",
-    neutral: "#737373", stone: "#78716C",
+    red: "#EF4444",
+    orange: "#F97316",
+    amber: "#F59E0B",
+    yellow: "#EAB308",
+    lime: "#84CC16",
+    green: "#22C55E",
+    emerald: "#10B981",
+    teal: "#14B8A6",
+    cyan: "#06B6D4",
+    sky: "#0EA5E9",
+    blue: "#3B82F6",
+    indigo: "#6366F1",
+    violet: "#8B5CF6",
+    purple: "#A855F7",
+    fuchsia: "#D946EF",
+    pink: "#EC4899",
+    rose: "#F43F5E",
+    slate: "#64748B",
+    gray: "#6B7280",
+    zinc: "#71717A",
+    neutral: "#737373",
+    stone: "#78716C",
   };
   return colorMap[colorName.toLowerCase()] || "#CCCCCC";
 };
@@ -114,8 +130,8 @@ const Header = () => {
       if (dropdownRef.current && !dropdownRef.current.contains(target)) {
         setIsDropdownOpen(false);
         if (isThemeSelectorOpen) {
-            setIsThemeSelectorOpen(false);
-            setThemeSearchTerm("");
+          setIsThemeSelectorOpen(false);
+          setThemeSearchTerm("");
         }
       }
     };
@@ -135,23 +151,24 @@ const Header = () => {
       (path === "/dashboard" && pathname === "/dashboard") ||
       (path !== "/dashboard" && pathname.startsWith(path));
 
-    let baseClasses = "px-3 py-2 text-sm font-medium transition-colors duration-150 ease-in-out rounded";
+    let baseClasses =
+      "px-3 py-2 text-sm font-medium transition-colors duration-150 ease-in-out rounded";
     if (isMobile) baseClasses += " block w-full text-left";
 
     return `${baseClasses} ${
       isActive
-        ? `bg-${selectedTheme}-100 text-${selectedTheme}-800 underline font-semibold`
-        : `text-${selectedTheme}-600 hover:bg-${selectedTheme}-50 hover:text-${selectedTheme}-700`
+        ? `bg-gray-100 text-gray-800 underline font-semibold`
+        : `text-gray-600 hover:bg-gray-50 hover:text-gray-700`
     }`;
   };
 
   const handleThemeSelect = (color: string) => {
-    setSelectedTheme(color); // This now calls the function from ThemeContext
+    setSelectedTheme(color);
     setIsThemeSelectorOpen(false);
     setThemeSearchTerm("");
   };
 
-  const filteredThemeColors = themeColors.filter((color) => // themeColors from context
+  const filteredThemeColors = themeColors.filter((color) =>
     color.toLowerCase().includes(themeSearchTerm.toLowerCase())
   );
 
@@ -166,13 +183,20 @@ const Header = () => {
     <header className="bg-white shadow-md sticky top-0 z-40">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
-          <Link href="/dashboard" className={`text-2xl font-bold text-${selectedTheme}-800`}>
+          <Link
+            href="/dashboard"
+            className={`text-2xl font-bold text-gray-800`}
+          >
             <Bot className="block h-8 w-8" aria-hidden="true" />
           </Link>
           <div className="flex items-center">
             <nav className="hidden md:flex space-x-1 items-center">
               {navLinks.map((link) => (
-                <Link key={link.href} href={link.href} className={getLinkClass(link.href)}>
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={getLinkClass(link.href)}
+                >
                   {link.label}
                 </Link>
               ))}
@@ -182,7 +206,7 @@ const Header = () => {
               <button
                 ref={mobileMenuButtonRef}
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className={`p-2 rounded-md text-${selectedTheme}-600 hover:text-${selectedTheme}-900 hover:bg-${selectedTheme}-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-${selectedTheme}-500`}
+                className={`p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-500`}
                 aria-expanded={isMobileMenuOpen}
                 aria-label="Open main menu"
                 data-testid="mobile-menu-button"
@@ -198,44 +222,54 @@ const Header = () => {
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className={`p-1.5 ml-4 rounded-full border hover:bg-${selectedTheme}-100 outline-none focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${selectedTheme}-500`}
+                className={`p-1.5 ml-4 rounded-full border hover:bg-gray-100 outline-none focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500`}
                 aria-label="User menu"
                 aria-expanded={isDropdownOpen}
               >
-                <User className={`h-8 w-8 text-${selectedTheme}-600`} />
+                <User className={`h-8 w-8 text-gray-600`} />
               </button>
               {isDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-64 bg-white rounded-md shadow-xl z-50 py-1 ring-1 ring-black ring-opacity-5">
                   {userEmail && (
                     <div className="px-4 py-3">
-                      <p className={`text-sm text-${selectedTheme}-500`}>Signed in as</p>
+                      <p className={`text-sm text-gray-500`}>
+                        Signed in as
+                      </p>
                       <p
-                        className={`text-sm font-medium text-${selectedTheme}-900 truncate`}
+                        className={`text-sm font-medium text-gray-900 truncate`}
                         title={userEmail}
                       >
                         {userEmail}
                       </p>
                     </div>
                   )}
-                  <div className={`border-t border-${selectedTheme}-100`}></div>
-                  
-                  <div className="px-4 py-3">
+                  {/* <div className={`border-t border-gray-100`}></div> */}
+
+                  {/* <div className="px-4 py-3">
                     <div className="flex justify-between items-center">
-                      <span className={`text-sm font-medium text-${selectedTheme}-900`}>Theme</span>
+                      <span
+                        className={`text-sm font-medium text-gray-900`}
+                      >
+                        Theme
+                      </span>
                       <button
                         ref={themeToggleButtonRef}
                         onClick={toggleThemeSelector}
-                        className={`flex items-center text-sm text-${selectedTheme}-700 hover:text-${selectedTheme}-900 focus:outline-none p-1 -mr-1 rounded-md hover:bg-${selectedTheme}-100`}
+                        className={`flex items-center text-sm text-gray-700 hover:text-gray-900 focus:outline-none p-1 -mr-1 rounded-md hover:bg-gray-100`}
                         aria-expanded={isThemeSelectorOpen}
                         aria-controls="theme-picker-panel"
                       >
                         <span
-                          style={{ backgroundColor: getTailwindColorValue(selectedTheme) }}
-                          className={`inline-block w-4 h-4 rounded-full mr-2 border border-${selectedTheme}-300`}
+                          style={{
+                            backgroundColor:
+                              getTailwindColorValue(selectedTheme),
+                          }}
+                          className={`inline-block w-4 h-4 rounded-full mr-2 border border-gray-300`}
                         ></span>
-                        {selectedTheme.charAt(0).toUpperCase() + selectedTheme.slice(1)}
+                        {selectedTheme.charAt(0).toUpperCase() +
+                          selectedTheme.slice(1)}
                         <ChevronDown
-                          className={`ml-1 h-4 w-4 text-${selectedTheme}-500 transform transition-transform duration-150 ${
+                          className={`ml-1 h-4 w-4 text-gray-500 transform transition-transform duration-150 ${
                             isThemeSelectorOpen ? "rotate-180" : ""
                           }`}
                         />
@@ -246,7 +280,7 @@ const Header = () => {
                       <div
                         id="theme-picker-panel"
                         ref={themeSelectorRef}
-                        className={`mt-2 p-2 border border-${selectedTheme}-200 rounded-md bg-${selectedTheme}-50 shadow-sm`}
+                        className={`mt-2 p-2 border border-gray-200 rounded-md bg-gray-50 shadow-sm`}
                       >
                         <input
                           ref={themeSearchInputRef}
@@ -254,7 +288,7 @@ const Header = () => {
                           placeholder="Search color..."
                           value={themeSearchTerm}
                           onChange={(e) => setThemeSearchTerm(e.target.value)}
-                          className={`w-full px-2 py-1.5 border border-${selectedTheme}-300 rounded-md text-sm mb-2 focus:ring-1 focus:ring-${selectedTheme}-500 focus:border-${selectedTheme}-500`}
+                          className={`w-full px-2 py-1.5 border border-gray-300 rounded-md text-sm mb-2 focus:ring-1 focus:ring-gray-500 focus:border-gray-500`}
                         />
                         <div className="max-h-36 overflow-y-auto space-y-1 pr-1">
                           {filteredThemeColors.length > 0 ? (
@@ -264,34 +298,43 @@ const Header = () => {
                                 onClick={() => handleThemeSelect(color)}
                                 className={`w-full flex items-center px-2 py-1.5 text-sm rounded-md transition-colors ${
                                   selectedTheme === color
-                                    ? `bg-${selectedTheme}-100 text-${selectedTheme}-700 font-medium`
-                                    : `text-${selectedTheme}-700 hover:bg-${selectedTheme}-200`
+                                    ? `bg-gray-100 text-gray-700 font-medium`
+                                    : `text-gray-700 hover:bg-gray-200`
                                 }`}
                                 role="option"
                                 aria-selected={selectedTheme === color}
                               >
                                 <span
-                                  style={{ backgroundColor: getTailwindColorValue(color) }}
-                                  className={`inline-block w-3 h-3 rounded-full mr-2 border border-${selectedTheme}-400`}
+                                  style={{
+                                    backgroundColor:
+                                      getTailwindColorValue(color),
+                                  }}
+                                  className={`inline-block w-3 h-3 rounded-full mr-2 border border-gray-400`}
                                 ></span>
                                 {color.charAt(0).toUpperCase() + color.slice(1)}
                                 {selectedTheme === color && (
-                                  <Check className={`ml-auto h-4 w-4 text-${selectedTheme}-600`} />
+                                  <Check
+                                    className={`ml-auto h-4 w-4 text-gray-600`}
+                                  />
                                 )}
                               </button>
                             ))
                           ) : (
-                            <p className={`text-sm text-${selectedTheme}-500 text-center py-2`}>No colors found.</p>
+                            <p
+                              className={`text-sm text-gray-500 text-center py-2`}
+                            >
+                              No colors found.
+                            </p>
                           )}
                         </div>
                       </div>
                     )}
                   </div>
 
-                  <div className={`border-t border-${selectedTheme}-100`}></div>
+                  <div className={`border-t border-gray-100`}></div> */}
                   <button
                     onClick={handleLogout}
-                    className={`block w-full text-left px-4 py-2 text-sm text-${selectedTheme}-700 hover:bg-${selectedTheme}-100 focus:outline-none focus:bg-${selectedTheme}-100`}
+                    className={`block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100`}
                     role="menuitem"
                   >
                     Logout
@@ -305,7 +348,7 @@ const Header = () => {
         {isMobileMenuOpen && (
           <div
             ref={mobileMenuPanelRef}
-            className={`md:hidden absolute top-16 left-0 right-0 bg-white shadow-lg z-30 mx-4 rounded-b-md border border-t-0 border-${selectedTheme}-200`}
+            className={`md:hidden absolute top-16 left-0 right-0 bg-white shadow-lg z-30 mx-4 rounded-b-md border border-t-0 border-gray-200`}
             id="mobile-menu"
           >
             <div className="space-y-1 px-2 pt-2 pb-3">

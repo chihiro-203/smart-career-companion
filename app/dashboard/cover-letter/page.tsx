@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // app/dashboard/cover-letter/page.tsx
 "use client";
 
@@ -312,10 +313,10 @@ export default function CoverLetterGeneratorPage() {
   return (
     <div className="py-10 px-4">
       <div className="text-center mb-10">
-        <h1 className={`text-4xl font-bold text-${selectedTheme}-800`}>
-          <span className={`text-${selectedTheme}-600`}>Cover Letter</span> Generator
+        <h1 className={`text-4xl font-bold text-gray-800`}>
+          <span className={`text-gray-600`}>Cover Letter</span> Generator
         </h1>
-        <p className={`text-lg text-${selectedTheme}-600 mt-2`}>
+        <p className={`text-lg text-gray-600 mt-2`}>
           Upload your CV and paste a job description for a detailed analysis.
         </p>
       </div>
@@ -327,20 +328,20 @@ export default function CoverLetterGeneratorPage() {
         <div>
           <label
             htmlFor="cv-upload"
-            className={`block text-md font-medium text-${selectedTheme}-700 mb-1`}
+            className={`block text-md font-medium text-gray-700 mb-1`}
           >
             Upload Your CV (PDF only)
           </label>
-          <div className={`mt-1 flex items-center justify-between border-2 border-dashed border-${selectedTheme}-300 p-4 rounded-lg bg-${selectedTheme}-50`}>
+          <div className={`mt-1 flex items-center justify-between border-2 border-dashed border-gray-300 p-4 rounded-lg bg-gray-50`}>
             <span
-              className={`text-${selectedTheme}-600 truncate max-w-[calc(100%-150px)]`}
+              className={`text-gray-600 truncate max-w-[calc(100%-150px)]`}
               title={fileName}
             >
               {fileName}
             </span>
             <label
               htmlFor="cv-upload-input"
-              className={`cursor-pointer bg-${selectedTheme}-700 hover:bg-${selectedTheme}-800 text-white font-semibold py-2 px-4 rounded-md text-sm transition`}
+              className={`cursor-pointer bg-gray-700 hover:bg-gray-800 text-white font-semibold py-2 px-4 rounded-md text-sm transition`}
             >
               <ArrowUpTrayIcon className="h-5 w-5 inline-block mr-2" /> Upload
               CV
@@ -354,14 +355,14 @@ export default function CoverLetterGeneratorPage() {
               disabled={isGenerating}
             />
           </div>
-          <p className={`mt-1 text-xs text-${selectedTheme}-500`}>{uploadMessage}</p>
+          <p className={`mt-1 text-xs text-gray-500`}>{uploadMessage}</p>
         </div>
 
         {showJdInput && (
           <div>
             <label
               htmlFor="job-description"
-              className={`block text-md font-medium text-${selectedTheme}-700 mb-1`}
+              className={`block text-md font-medium text-gray-700 mb-1`}
             >
               Paste Job Description
             </label>
@@ -369,14 +370,14 @@ export default function CoverLetterGeneratorPage() {
               id="job-description"
               name="jobDescription"
               rows={8}
-              className={`mt-1 block w-full p-3 border border-${selectedTheme}-300 rounded-md shadow-sm focus:ring-${selectedTheme}-500 focus:border-${selectedTheme}-500 sm:text-sm bg-${selectedTheme}-50 placeholder-${selectedTheme}-400`}
+              className={`mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-gray-500 focus:border-gray-500 sm:text-sm bg-gray-50 placeholder-gray-400`}
               placeholder="Paste the full job description here..."
               value={jobDescription}
               onChange={(e) => setJobDescription(e.target.value)}
               required
               disabled={isGenerating}
             />
-            <p className={`mt-1 text-xs text-${selectedTheme}-500`}>
+            <p className={`mt-1 text-xs text-gray-500`}>
               Ensure the job description is complete for accurate analysis.
             </p>
           </div>
@@ -386,7 +387,7 @@ export default function CoverLetterGeneratorPage() {
           <button
             type="submit"
             disabled={isGenerating || !cvFile || !jobDescription.trim()}
-            className={`w-full bg-${selectedTheme}-600 hover:bg-${selectedTheme}-700 text-white font-bold py-3 px-4 rounded-md transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center`}
+            className={`w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-md transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center`}
           >
             {isGenerating ? (
               <>
@@ -423,9 +424,9 @@ export default function CoverLetterGeneratorPage() {
       </form>
 
       {isGenerating && (
-        <div className={`text-center text-${selectedTheme}-700 py-10`}>
+        <div className={`text-center text-gray-700 py-10`}>
           <svg
-            className={`animate-spin h-10 w-10 text-${selectedTheme}-600 mx-auto mb-4`}
+            className={`animate-spin h-10 w-10 text-gray-600 mx-auto mb-4`}
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
@@ -453,17 +454,17 @@ export default function CoverLetterGeneratorPage() {
         <div className="max-w-3xl mx-auto bg-white p-6 sm:p-10 rounded-xl shadow-2xl relative">
           <button
             onClick={copyToClipboard}
-            className={`absolute top-4 right-4 bg-${selectedTheme}-200 hover:bg-${selectedTheme}-300 text-${selectedTheme}-700 font-semibold py-2 px-3 rounded-md text-xs flex items-center transition focus:outline-none focus:ring-2 focus:ring-indigo-500`}
+            className={`absolute top-4 right-4 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-3 rounded-md text-xs flex items-center transition focus:outline-none focus:ring-2 focus:ring-indigo-500`}
             title="Copy to Clipboard"
           >
             <ClipboardDocumentIcon className="h-4 w-4 mr-1.5" /> Copy
           </button>
 
-          <h2 className={`text-2xl font-semibold text-${selectedTheme}-800 mb-6 border-b pb-3 border-${selectedTheme}-200`}>
+          <h2 className={`text-2xl font-semibold text-gray-800 mb-6 border-b pb-3 border-gray-200`}>
             Your Generated Cover Letter
           </h2>
 
-          <div className={`prose prose-sm sm:prose-base max-w-none text-${selectedTheme}-800 whitespace-pre-wrap text-left`}>
+          <div className={`prose prose-sm sm:prose-base max-w-none text-gray-800 whitespace-pre-wrap text-left`}>
             {formatCoverLetterText(generatedLetter)}
           </div>
         </div>
