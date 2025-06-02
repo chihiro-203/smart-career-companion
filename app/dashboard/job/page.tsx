@@ -382,7 +382,7 @@ export default function JobSuggestionPage() {
       {!isLoading && !searchError && foundJobs.length > 0 && (
         <div className="max-w-3xl mx-auto space-y-5">
           <h2 className="text-2xl font-semibold text-gray-800 text-center mb-6">
-            Found {foundJobs.length} Matching Opportunit
+            Found {foundJobs.length} Matching Opportunity
             {foundJobs.length === 1 ? "y" : "ies"}
           </h2>
           {foundJobs.map((job) => (

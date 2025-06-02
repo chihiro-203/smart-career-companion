@@ -294,21 +294,24 @@ export default function CoverLetterGeneratorPage() {
   };
 
   const copyToClipboard = () => {
-    const letterText = formatCoverLetterText(generatedLetter);
-    if (letterText) {
-      navigator.clipboard
-        .writeText(letterText)
-        .then(() => alert("Cover letter copied to clipboard!"))
-        .catch((err) => {
-          console.error("Failed to copy text: ", err);
-          alert(
-            "Failed to copy cover letter. Please try again or copy manually."
-          );
-        });
-    } else {
-      alert("Nothing to copy.");
-    }
-  };
+  // If generatedLetter is null, pass undefined instead. Otherwise, pass generatedLetter.
+  const letterArg = generatedLetter === null ? undefined : generatedLetter;
+  const letterText = formatCoverLetterText(letterArg); // Now type-correct
+
+  if (letterText) { // This check is still good, as formatCoverLetterText might return empty string or undefined
+    navigator.clipboard
+      .writeText(letterText)
+      .then(() => alert("Cover letter copied to clipboard!"))
+      .catch((err) => {
+        console.error("Failed to copy text: ", err);
+        alert(
+          "Failed to copy cover letter. Please try again or copy manually."
+        );
+      });
+  } else {
+    alert("Nothing to copy.");
+  }
+};
 
   return (
     <div className="py-10 px-4">
