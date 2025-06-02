@@ -1,22 +1,22 @@
+/* eslint-disable prefer-const */
 // app/api/search-jobs/route.ts
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
-const FASTAPI_BASE_URL = process.env.FASTAPI_PUBLIC_URL; // Ensure this is in .env.local (e.g., FASTAPI_PUBLIC_URL=https://scc.up.railway.app)
+const FASTAPI_BASE_URL =
+  process.env.FASTAPI_PUBLIC_URL || "https://scc.up.railway.app";
 
 interface FastAPIJobCategory {
   id: number;
   name: string;
   skills?: string[];
 }
-
 interface FastAPIJobSkill {
   id: number;
   name: string;
 }
-
 interface FastAPIJob {
   id: number;
-  requirements: string; // EXPECTED: A JSON string representing an array of strings, e.g., "[\"Req 1\", \"Req 2\"]"
+  requirements: string;
   level: string | null;
   allowance: string | number | null;
   competitive: boolean | number | null;
@@ -24,13 +24,12 @@ interface FastAPIJob {
   category: FastAPIJobCategory | null;
   skills: FastAPIJobSkill[];
 }
-
 interface FrontendJob {
   id: number | string;
   title: string;
   link: string;
   source?: string;
-  requirements: string; // Passed through as the JSON string of an array for frontend to parse
+  requirements: string;
   skills?: string[];
   level?: string;
   allowance?: string | number | null;
@@ -38,135 +37,252 @@ interface FrontendJob {
   category?: string;
 }
 
-function extractTitleFromRequirements(requirementsString: string, jobLink: string): string {
-    try {
-        // This function now strictly expects requirementsString to be a JSON parsable array string
-        const reqArray: string[] = JSON.parse(requirementsString);
-        if (!Array.isArray(reqArray)) { // Should not happen if backend sends correct JSON array string
-            throw new Error("Parsed requirements is not an array.");
-        }
-
-        const titleIndex = reqArray.findIndex(item => typeof item === 'string' && item.toLowerCase().trim() === "job title:");
-        if (titleIndex !== -1 && reqArray[titleIndex + 1]) {
-            return reqArray[titleIndex + 1].trim();
-        }
-
-        const companyIndex = reqArray.findIndex(item => typeof item === 'string' && item.toLowerCase().trim() === "company:");
-        let companyName = "";
-        if (companyIndex !== -1 && reqArray[companyIndex + 1]) {
-            companyName = ` at ${reqArray[companyIndex + 1].trim()}`;
-        }
-        
-        const commonTitleKeywords = ["developer", "engineer", "specialist", "manager", "analyst", "designer", "lead", "architect"];
-        const commonTitle = reqArray.find(item =>
-            typeof item === 'string' && commonTitleKeywords.some(keyword => item.toLowerCase().includes(keyword)) && item.length < 100
-        );
-        if (commonTitle) return commonTitle.trim() + companyName;
-
-    } catch (e) {
-        console.warn(`API Route: Could not extract title from requirements for ${jobLink}. Error: ${(e as Error).message}. Raw: ${String(requirementsString).substring(0,100)}...`);
-        // Fallback if it's not a parsable JSON array string, but just a plain string (should be rare if backend is fixed)
-        if (typeof requirementsString === 'string') {
-            const firstLine = requirementsString.split('\n')[0].trim();
-            if(firstLine.length > 3 && firstLine.length < 100) return firstLine; // Assume it's title-like
-            return requirementsString.substring(0, 70).trim() + (requirementsString.length > 70 ? "..." : "");
-        }
+function extractTitleFromRequirements(
+  requirementsString: string,
+  jobLink: string,
+  jobCategoryName?: string | null
+): string {
+  let extractedTitle = "Job Details"; // Default
+  try {
+    if (
+      typeof requirementsString !== "string" ||
+      !requirementsString.startsWith("[")
+    ) {
+      // Not a JSON array string, might be a plain description or already a title
+      const firstMeaningfulLine =
+        requirementsString
+          .split("\n")
+          .map((s) => s.trim())
+          .filter(Boolean)[0] || requirementsString;
+      if (firstMeaningfulLine.length < 100 && firstMeaningfulLine.length > 2) {
+        // Heuristic for title-like line
+        extractedTitle = firstMeaningfulLine;
+      } else {
+        // Fallback for very long plain strings
+        extractedTitle =
+          requirementsString.substring(0, 70).trim() +
+          (requirementsString.length > 70 ? "..." : "");
+      }
+      // console.log(`Extracted title (non-JSON path) for ${jobLink}: ${extractedTitle}`);
+      return extractedTitle;
     }
-    return "Job Details";
-}
 
+    const reqArray: string[] = JSON.parse(requirementsString);
+    const titleIndex = reqArray.findIndex(
+      (item) => item.toLowerCase().trim() === "job title:"
+    );
+    if (titleIndex !== -1 && reqArray[titleIndex + 1]) {
+      extractedTitle = reqArray[titleIndex + 1].trim();
+      // console.log(`Extracted title (Job Title: path) for ${jobLink}: ${extractedTitle}`);
+      return extractedTitle;
+    }
+
+    // Fallback: Try to find a title-like line if "Job Title:" is missing
+    const companyIndex = reqArray.findIndex(
+      (item) => item.toLowerCase().trim() === "company:"
+    );
+    let companyNameSuffix = "";
+    if (companyIndex !== -1 && reqArray[companyIndex + 1]) {
+      companyNameSuffix = ` at ${reqArray[companyIndex + 1].trim()}`;
+    }
+
+    const commonTitleLine = reqArray.find(
+      (item) =>
+        [
+          "developer",
+          "engineer",
+          "specialist",
+          "manager",
+          "analyst",
+          "designer",
+          "lead",
+          "architect",
+        ].some((term) => item.toLowerCase().includes(term) && item.length < 100) // Heuristic: title lines are usually not too long
+    );
+
+    if (commonTitleLine) {
+      extractedTitle = commonTitleLine.trim() + companyNameSuffix;
+    } else if (jobCategoryName) {
+      // If no specific title found in requirements, use the category name as a fallback title
+      extractedTitle = jobCategoryName + companyNameSuffix;
+    }
+    // console.log(`Extracted title (fallback path) for ${jobLink}: ${extractedTitle}`);
+    return extractedTitle;
+  } catch (e) {
+    console.warn(
+      `Could not parse/extract title from requirements for ${jobLink}. Error: ${
+        (e as Error).message
+      }. Raw: ${requirementsString.substring(0, 100)}...`
+    );
+    if (typeof requirementsString === "string") {
+      // If parsing failed but it's a string
+      return (
+        requirementsString.substring(0, 70).trim() +
+        (requirementsString.length > 70 ? "..." : "")
+      );
+    }
+  }
+  return extractedTitle; // Return default or last known good value
+}
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
-  const titleQuery = searchParams.get('title');
+  const titleQuery = searchParams.get("title");
 
   if (!FASTAPI_BASE_URL) {
-    console.error("FATAL API Route: FASTAPI_PUBLIC_URL environment variable is not set.");
-    return NextResponse.json({ status: 'error', message: 'Server configuration error: Backend URL missing.' }, { status: 500 });
+    return NextResponse.json(
+      { status: "error", message: "Server config error." },
+      { status: 500 }
+    );
   }
-
   if (!titleQuery) {
-    return NextResponse.json({ status: 'error', message: 'Job title query parameter is required.' }, { status: 400 });
+    /* ... error handling ... */ return NextResponse.json(
+      { status: "error", message: "Job title query required." },
+      { status: 400 }
+    );
   }
 
   try {
-    const scrapeUrl = `${FASTAPI_BASE_URL}/job-scraper?title=${encodeURIComponent(titleQuery)}`;
-    console.log(`API Route: Calling FastAPI POST to scrape: ${scrapeUrl}`);
-    const scrapeResponse = await fetch(scrapeUrl, { method: 'POST', headers: { 'Accept': 'application/json' } });
+    const scrapeUrl = `${FASTAPI_BASE_URL}/job-scraper?title=${encodeURIComponent(
+      titleQuery
+    )}`;
+    const scrapeResponse = await fetch(scrapeUrl, {
+      method: "POST",
+      headers: { Accept: "application/json" },
+    });
 
     if (!scrapeResponse.ok) {
-      const errorText = await scrapeResponse.text();
-      let errorDetail = `Scraping initiation failed: ${scrapeResponse.statusText || scrapeResponse.status}`;
-      try { const errorData = JSON.parse(errorText); errorDetail = errorData.detail?.[0]?.msg || errorData.message || errorDetail; }
-      catch (e) { console.warn("API Route: FastAPI POST error response was not valid JSON:", errorText); }
-      console.error("API Route: FastAPI POST /job-scraper error:", scrapeResponse.status, errorDetail);
-      throw new Error(errorDetail);
+      /* ... error handling ... */ throw new Error(
+        `Scraping failed: ${scrapeResponse.statusText}`
+      );
     }
     const scrapeResult = await scrapeResponse.json();
-    if (scrapeResult.status !== 'success') throw new Error(scrapeResult.message || "Scraping process on backend reported an issue.");
-    console.log(`API Route: FastAPI scraped and saved ${scrapeResult.count || 0} jobs for: ${titleQuery}`);
+    if (scrapeResult.status !== "success")
+      throw new Error(scrapeResult.message || "Scraping error.");
+    console.log(
+      `API: FastAPI scraped ${scrapeResult.count || 0} jobs for: ${titleQuery}`
+    );
 
-    const limitForFetch = 20;
-    const fetchJobsUrl = `${FASTAPI_BASE_URL}/job-scraper?limit=${limitForFetch}&offset=0`;
-    console.log(`API Route: Calling FastAPI GET to fetch jobs: ${fetchJobsUrl}`);
-    const fetchJobsResponse = await fetch(fetchJobsUrl, { method: 'GET', headers: { 'Accept': 'application/json' } });
+    // Fetch using category_name derived from titleQuery
+    const categoryToFetch = titleQuery; // Use the search query directly as category for now
+    const limitForFetch = 10;
+    let fetchJobsUrl = `${FASTAPI_BASE_URL}/job-scraper?limit=${limitForFetch}&offset=0&category_name=${encodeURIComponent(
+      categoryToFetch
+    )}`;
+    console.log(`API: Calling FastAPI GET (category): ${fetchJobsUrl}`);
+    let fetchJobsResponse = await fetch(fetchJobsUrl, {
+      headers: { Accept: "application/json" },
+    });
+    let fetchedData = await fetchJobsResponse.json();
 
-    if (!fetchJobsResponse.ok) {
-      const errorText = await fetchJobsResponse.text();
-      let errorDetail = `Fetching jobs failed: ${fetchJobsResponse.statusText || fetchJobsResponse.status}`;
-      try { const errorData = JSON.parse(errorText); errorDetail = errorData.detail?.[0]?.msg || errorData.message || errorDetail; }
-      catch (e) { console.warn("API Route: FastAPI GET error response was not valid JSON:", errorText); }
-      console.error("API Route: FastAPI GET /job-scraper error:", fetchJobsResponse.status, errorDetail);
-      throw new Error(errorDetail);
+    // Fallback if category search yields no results or fails (but not a network error)
+    if (
+      !fetchJobsResponse.ok ||
+      fetchedData.status !== "success" ||
+      !fetchedData.jobs ||
+      fetchedData.jobs.length === 0
+    ) {
+      console.log(
+        `API: Category fetch for "${categoryToFetch}" yielded no/few results or failed. Trying generic fetch.`
+      );
+      const genericFetchUrl = `${FASTAPI_BASE_URL}/job-scraper?limit=20&offset=0`; // Fetch more for generic
+      console.log(`API: Calling FastAPI GET (generic): ${genericFetchUrl}`);
+      fetchJobsResponse = await fetch(genericFetchUrl, {
+        headers: { Accept: "application/json" },
+      });
+      if (!fetchJobsResponse.ok)
+        throw new Error(
+          `Generic job fetch also failed: ${fetchJobsResponse.statusText}`
+        );
+      fetchedData = await fetchJobsResponse.json();
+      if (fetchedData.status !== "success" || !fetchedData.jobs) {
+        throw new Error(
+          fetchedData.message ||
+            "Generic job fetch did not return successful data."
+        );
+      }
     }
-    const fetchedData = await fetchJobsResponse.json();
-    if (fetchedData.status !== 'success' || !fetchedData.jobs) throw new Error(fetchedData.message || "FastAPI GET /job-scraper did not return successful job data.");
 
-    const jobsForFrontend: FrontendJob[] = fetchedData.jobs.map((fj: FastAPIJob) => ({
-      id: fj.id,
-      title: extractTitleFromRequirements(fj.requirements, fj.link),
-      link: fj.link,
-      source: fj.category?.name || "Database",
-      requirements: fj.requirements, // This is the JSON string of an array
-      skills: fj.skills?.map(s => s.name) || [],
-      level: fj.level || "N/A",
-      allowance: fj.allowance,
-      competitive: fj.competitive,
-      category: fj.category?.name || "N/A",
-    }));
+    const jobsForFrontend: FrontendJob[] = fetchedData.jobs.map(
+      (fj: FastAPIJob) => ({
+        id: fj.id,
+        title: extractTitleFromRequirements(
+          fj.requirements,
+          fj.link,
+          fj.category?.name
+        ), // Pass category name
+        link: fj.link,
+        source: fj.category?.name || "Database",
+        requirements: fj.requirements,
+        skills: fj.skills?.map((s) => s.name) || [],
+        level: fj.level || "N/A",
+        allowance: fj.allowance,
+        competitive: fj.competitive,
+        category: fj.category?.name || "N/A",
+      })
+    );
 
-    const normalizedTitleQuery = titleQuery.toLowerCase().trim();
-    const filteredAndLimitedJobs = jobsForFrontend.filter(job => {
+    const normalizedTitleQuery = titleQuery.toLowerCase();
+    const queryTerms = normalizedTitleQuery
+      .split(" ")
+      .filter((term) => term.length > 2); // Split query into terms
+
+    const filteredAndLimitedJobs = jobsForFrontend
+      .filter((job) => {
         const jobTitleLower = job.title.toLowerCase();
+        const jobCategoryLower =
+          typeof job.category === "string" ? job.category.toLowerCase() : "";
+
+        // Check if extracted title contains any of the query terms
+        const titleMatches = queryTerms.some((term) =>
+          jobTitleLower.includes(term)
+        );
+        // Check if category name contains any of the query terms
+        const categoryMatches = jobCategoryLower
+          ? queryTerms.some((term) => jobCategoryLower.includes(term))
+          : false;
+
         let requirementsMatch = false;
         try {
-            if (typeof job.requirements === 'string' && job.requirements.trim().startsWith('[')) {
-                const parsedReqs = JSON.parse(job.requirements);
-                if (Array.isArray(parsedReqs)) {
-                    requirementsMatch = parsedReqs.some((r: string) => typeof r === 'string' && r.toLowerCase().includes(normalizedTitleQuery));
-                }
-            } else if (typeof job.requirements === 'string') { // Fallback for plain string requirements
-                 requirementsMatch = job.requirements.toLowerCase().includes(normalizedTitleQuery);
-            }
+          const parsedReqs = JSON.parse(job.requirements);
+          if (Array.isArray(parsedReqs)) {
+            // Check if requirements contain any of the query terms
+            requirementsMatch = parsedReqs.some(
+              (r: string) =>
+                typeof r === "string" &&
+                queryTerms.some((term) => r.toLowerCase().includes(term))
+            );
+          }
         } catch (e) {
-            if (typeof job.requirements === 'string') {
-                requirementsMatch = job.requirements.toLowerCase().includes(normalizedTitleQuery);
-            }
-            console.warn(`API Route Filtering: Could not parse reqs for job ID ${job.id}. Raw search. Error: ${(e as Error).message}`);
+          console.error(e);
+          const skillsMatch =
+            job.skills &&
+            job.skills.some((s) =>
+              queryTerms.some((term) => s.toLowerCase().includes(term))
+            );
+
+          return (
+            titleMatches || categoryMatches || requirementsMatch || skillsMatch
+          );
         }
-        const skillsMatch = job.skills && job.skills.some(s => s.toLowerCase().includes(normalizedTitleQuery));
-        return jobTitleLower.includes(normalizedTitleQuery) || requirementsMatch || skillsMatch;
-    }).slice(0, 3);
+      })
+      .slice(0, 3);
 
-    console.log(`API Route: Returning ${filteredAndLimitedJobs.length} jobs to frontend for query: ${titleQuery}`);
-    return NextResponse.json({ status: 'success', jobs: filteredAndLimitedJobs });
-
+    console.log(
+      `API: Returning ${filteredAndLimitedJobs.length} jobs to frontend for query: ${titleQuery}`
+    );
+    return NextResponse.json({
+      status: "success",
+      jobs: filteredAndLimitedJobs,
+    });
   } catch (error) {
-    console.error("API Route /api/search-jobs Uncaught Error:", error);
-    const errorMessage = (error as Error).message || 'An unexpected error occurred.';
-    if ((error as any).cause?.code === 'ECONNREFUSED') {
-        return NextResponse.json({ status: 'error', message: `Could not connect to backend at ${FASTAPI_BASE_URL}. Ensure it's running.` }, { status: 503 });
-    }
-    return NextResponse.json({ status: 'error', message: errorMessage }, { status: 500 });
+    console.error("Next.js API Route /api/search-jobs Uncaught Error:", error);
+    return NextResponse.json(
+      {
+        status: "error",
+        message: (error as Error).message || "Error searching jobs.",
+      },
+      { status: 500 }
+    );
   }
 }
