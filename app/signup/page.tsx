@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState } from "react";
@@ -92,12 +93,12 @@ const RegisterPage = () => {
       )}
 
       {/* Left Section */}
-      <div className={`w-full md:w-1/2 bg-${selectedTheme}-900 text-white flex flex-col items-center justify-center p-8 lg:p-12 order-1 md:order-1 h-1/2 md:h-full`}>
+      <div className={`w-full md:w-1/2 bg-gray-900 text-white flex flex-col items-center justify-center p-8 lg:p-12 order-1 md:order-1 h-1/2 md:h-full`}>
         <div className="text-center mb-8 md:mb-12">
-          <h1 className={`text-3xl lg:text-4xl font-bold text-${selectedTheme}-200`}>
+          <h1 className={`text-3xl lg:text-4xl font-bold text-gray-200`}>
             Join Smart Career Companion
           </h1>
-          <p className={`text-md lg:text-lg text-${selectedTheme}-300 mt-2`}>
+          <p className={`text-md lg:text-lg text-gray-300 mt-2`}>
             Start your journey to a brighter professional future.
           </p>
         </div>
@@ -116,8 +117,8 @@ const RegisterPage = () => {
       <div className="w-full md:w-1/2 bg-white flex flex-col justify-center items-center p-8 sm:p-12 order-2 md:order-2 h-1/2 md:h-full overflow-y-auto">
         <div className="w-full max-w-md">
           <div className="text-left mb-10">
-            <h2 className={`text-3xl sm:text-4xl font-bold text-${selectedTheme}-800`}>Create your account</h2>
-            <p className={`text-${selectedTheme}-500 mt-2`}>Let&apos;s get you started!</p>
+            <h2 className={`text-3xl sm:text-4xl font-bold text-gray-800`}>Create your account</h2>
+            <p className={`text-gray-500 mt-2`}>Let&apos;s get you started!</p>
           </div>
 
           <form onSubmit={handleRegister} className="space-y-6">
@@ -128,7 +129,7 @@ const RegisterPage = () => {
                 type="email"
                 name="email"
                 autoComplete="email"
-                className={`w-full px-4 py-3 border border-${selectedTheme}-300 rounded-lg bg-${selectedTheme}-50 focus:ring-2 focus:ring-${selectedTheme}-500 focus:border-${selectedTheme}-500 outline-none placeholder-${selectedTheme}-400 text-${selectedTheme}-900`}
+                className={`w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none placeholder-gray-400 text-gray-900`}
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -143,7 +144,7 @@ const RegisterPage = () => {
                 type={showPassword ? "text" : "password"}
                 name="password"
                 autoComplete="new-password"
-                className={`w-full px-4 py-3 border border-${selectedTheme}-300 rounded-lg bg-${selectedTheme}-50 focus:ring-2 focus:ring-${selectedTheme}-500 focus:border-${selectedTheme}-500 outline-none placeholder-${selectedTheme}-400 text-${selectedTheme}-900`}
+                className={`w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none placeholder-gray-400 text-gray-900`}
                 placeholder="Create a password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -153,7 +154,7 @@ const RegisterPage = () => {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className={`absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 text-${selectedTheme}-500 hover:text-${selectedTheme}-700`}
+                className={`absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 text-gray-500 hover:text-gray-700`}
               >
                 {showPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
               </button>
@@ -165,7 +166,7 @@ const RegisterPage = () => {
                 type={showConfirmPassword ? "text" : "password"}
                 name="confirmPassword"
                 autoComplete="new-password"
-                className={`w-full px-4 py-3 border border-${selectedTheme}-300 rounded-lg bg-${selectedTheme}-50 focus:ring-2 focus:ring-${selectedTheme}-500 focus:border-${selectedTheme}-500 outline-none placeholder-${selectedTheme}-400 text-${selectedTheme}-900`}
+                className={`w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:border-gray-500 outline-none placeholder-gray-400 text-gray-900`}
                 placeholder="Confirm your password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -175,7 +176,7 @@ const RegisterPage = () => {
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className={`absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 text-${selectedTheme}-500 hover:text-${selectedTheme}-700`}
+                className={`absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 text-gray-500 hover:text-gray-700`}
               >
                 {showConfirmPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
               </button>
@@ -183,16 +184,16 @@ const RegisterPage = () => {
 
             <button
               type="submit"
-              className={`w-full py-3 px-4 bg-${selectedTheme}-600 text-white font-semibold rounded-lg hover:bg-${selectedTheme}-700 focus:outline-none focus:ring-2 focus:ring-${selectedTheme}-500 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed transition-colors duration-150`}
+              className={`w-full py-3 px-4 bg-gray-600 text-white font-semibold rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed transition-colors duration-150`}
               disabled={loading}
             >
               {loading ? "Creating Account..." : "Create Account"}
             </button>
           </form>
 
-          <p className={`mt-10 text-center text-sm text-${selectedTheme}-600`}>
+          <p className={`mt-10 text-center text-sm text-gray-600`}>
             Already have an account?{" "}
-            <Link href="/login" className={`font-medium text-${selectedTheme}-600 hover:text-${selectedTheme}-500 hover:underline`}>
+            <Link href="/login" className={`font-medium text-gray-600 hover:text-gray-500 hover:underline`}>
               Log In
             </Link>
           </p>
