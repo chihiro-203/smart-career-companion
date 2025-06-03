@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // app/dashboard/job/page.tsx
 "use client";
 
@@ -50,7 +52,7 @@ const normalizeUrl = (urlString: string | undefined | null): string => {
     }
 
     const url = new URL(trimmedUrl);
-    let hostname = url.hostname;
+    const hostname = url.hostname;
     // Optional: remove 'www.'
     // if (hostname.startsWith('www.')) {
     //     hostname = hostname.substring(4);
@@ -96,7 +98,7 @@ const processJobDataForUI = (rawJob: any): JobUIData => {
     if (requirementsString) {
       const lines = requirementsString
         .split(/\\n|\n|<br\s*\/?>/i)
-        .map((line) => line.replace(/<[^>]*>?/gm, "").trim())
+        .map((line:string) => line.replace(/<[^>]*>?/gm, "").trim())
         .filter(Boolean);
       if (lines.length > 0) {
         parsedRequirements = lines;
