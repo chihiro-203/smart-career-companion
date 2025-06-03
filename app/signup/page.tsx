@@ -117,7 +117,7 @@ const RegisterPage = () => {
         <div className="w-full max-w-md">
           <div className="text-left mb-10">
             <h2 className={`text-3xl sm:text-4xl font-bold text-${selectedTheme}-800`}>Create your account</h2>
-            <p className={`text-${selectedTheme}-500 mt-2`}>Let's get you started!</p>
+            <p className={`text-${selectedTheme}-500 mt-2`}>Let&apos;s get you started!</p>
           </div>
 
           <form onSubmit={handleRegister} className="space-y-6">
