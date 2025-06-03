@@ -15,9 +15,10 @@ interface JobCategoryFromFrontend {
 }
 
 interface JobUIData {
-  id: number | string;
+  id: number | string; // This will be made stable by processJobDataForUI
   title: string;
   link: string;
+  company?: string; // Added company
   source?: string;
   requirements: string;
   skills?: string[];
@@ -30,64 +31,143 @@ interface JobUIData {
 
 interface JobSearchAPIResponseFromNext {
   status: string;
-  jobs: JobUIData[];
+  jobs: any[]; // Raw jobs from API before processing
   message?: string;
 }
 
-const processJobDataForUI = (job: JobUIData): JobUIData => {
-  let parsedRequirements: string[] = [];
+// Helper function for URL Normalization (place it outside the component or in a utils file)
+const normalizeUrl = (urlString: string | undefined | null): string => {
+  if (!urlString || typeof urlString !== "string") return "";
   try {
-    const reqArray: string[] = JSON.parse(job.requirements);
-    if (Array.isArray(reqArray)) {
-      parsedRequirements = reqArray;
-    } else {
-      console.warn(
-        "Parsed requirements is not an array for job:",
-        job.title,
-        reqArray
-      );
-      parsedRequirements = ["Requirements format from API is unexpected."];
+    const trimmedUrl = urlString.trim();
+    if (!trimmedUrl || trimmedUrl === "#") return "";
+
+    if (
+      !trimmedUrl.startsWith("http://") &&
+      !trimmedUrl.startsWith("https://")
+    ) {
+      return trimmedUrl.toLowerCase();
     }
+
+    const url = new URL(trimmedUrl);
+    let hostname = url.hostname;
+    // Optional: remove 'www.'
+    // if (hostname.startsWith('www.')) {
+    //     hostname = hostname.substring(4);
+    // }
+    return `${url.protocol}//${hostname}${url.pathname}`
+      .toLowerCase()
+      .replace(/\/+$/, "");
   } catch (e) {
-    console.warn(
-      `UI: Could not parse requirements for job: ${
-        job.title
-      }. Raw: ${job.requirements.substring(0, 100)}... Error: ${
-        (e as Error).message
-      }`
-    );
-    if (typeof job.requirements === "string") {
-      const lines = job.requirements
-        .split("\n")
-        .map((line) => line.trim())
-        .filter(Boolean);
-      if (
-        lines.length > 0 &&
-        !(lines.length === 1 && lines[0] === job.requirements)
-      ) {
-        parsedRequirements = lines;
+    return urlString
+      .trim()
+      .toLowerCase()
+      .replace(/^http:\/\//, "https://")
+      .replace(/\/+$/, "");
+  }
+};
+
+const processJobDataForUI = (rawJob: any): JobUIData => {
+  const requirementsString =
+    typeof rawJob.requirements === "string"
+      ? rawJob.requirements
+      : String(rawJob.requirements || "");
+  let parsedRequirements: string[] = [];
+
+  try {
+    if (
+      requirementsString.trim().startsWith("[") &&
+      requirementsString.trim().endsWith("]")
+    ) {
+      const reqArray: any[] = JSON.parse(requirementsString);
+      if (Array.isArray(reqArray)) {
+        parsedRequirements = reqArray
+          .map((item) => String(item).trim())
+          .filter(Boolean);
       } else {
         parsedRequirements = [
-          "Detailed requirements could not be fully parsed. Please check the original link.",
+          "Requirements format from API is unexpected (not an array).",
         ];
       }
     } else {
-      parsedRequirements = [
-        "Requirements data unavailable or in an unexpected format.",
-      ];
+      throw new Error("Not a JSON array string, fallback to text parsing.");
+    }
+  } catch (e) {
+    if (requirementsString) {
+      const lines = requirementsString
+        .split(/\\n|\n|<br\s*\/?>/i)
+        .map((line) => line.replace(/<[^>]*>?/gm, "").trim())
+        .filter(Boolean);
+      if (lines.length > 0) {
+        parsedRequirements = lines;
+      } else {
+        parsedRequirements = [
+          "Detailed requirements could not be fully parsed.",
+        ];
+      }
+    } else {
+      parsedRequirements = ["Requirements data unavailable."];
     }
   }
-  return { ...job, parsedRequirements };
+
+  const title = (rawJob.title || rawJob.job_title || "N/A").trim();
+  const link = (rawJob.link || rawJob.job_url || "#").trim();
+  const source = (rawJob.source || "N/A").trim();
+  const company = (rawJob.company_name || rawJob.company || "N/A").trim();
+
+  // Generate a stable ID for React keys and selection logic
+  let uniqueId: string;
+  // Prioritize API-provided IDs
+  if (rawJob.id && String(rawJob.id).trim() !== "") {
+    uniqueId = `api_id-${String(rawJob.id).trim()}`;
+  } else if (rawJob.job_id && String(rawJob.job_id).trim() !== "") {
+    uniqueId = `api_job_id-${String(rawJob.job_id).trim()}`;
+  } else {
+    // Fallback if no API ID: use normalized link or composite
+    const normalizedLinkForId = normalizeUrl(link);
+    if (normalizedLinkForId && normalizedLinkForId !== "#") {
+      uniqueId = `link-${normalizedLinkForId}`;
+    } else {
+      // Last resort: composite of title and company (less unique but better than random)
+      const titleNorm = title
+        .toLowerCase()
+        .replace(/\W+/g, "-")
+        .substring(0, 30);
+      const companyNorm = company
+        .toLowerCase()
+        .replace(/\W+/g, "-")
+        .substring(0, 30);
+      // Add a small random hash to reduce collisions for this less reliable fallback
+      const randomHash = Math.random().toString(36).substring(2, 7);
+      uniqueId = `comp-${titleNorm}-${companyNorm}-${randomHash}`;
+    }
+  }
+
+  return {
+    id: uniqueId,
+    title: title,
+    link: link,
+    company: company,
+    source: source,
+    requirements: requirementsString,
+    skills: Array.isArray(rawJob.skills) ? rawJob.skills.map(String) : [],
+    level: rawJob.level || "N/A",
+    allowance: rawJob.allowance,
+    competitive: rawJob.competitive,
+    category: rawJob.category || "N/A",
+    parsedRequirements,
+  };
 };
 
 export default function JobSuggestionPage() {
   const [jobTitleQuery, setJobTitleQuery] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [foundJobs, setFoundJobs] = useState<JobUIData[]>([]);
-  const [selectedJobId, setSelectedJobId] = useState<number | string | null>(
-    null
-  );
+  const [selectedJobId, setSelectedJobId] = useState<string | null>(null); // ID is now always string
   const [searchError, setSearchError] = useState<string | null>(null);
+
+  const delay = (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
 
   const handleSearchJobs = async (event: FormEvent) => {
     event.preventDefault();
@@ -101,9 +181,21 @@ export default function JobSuggestionPage() {
     setSearchError(null);
 
     try {
-      const response = await fetch(
-        `/api/search-jobs?title=${encodeURIComponent(jobTitleQuery.trim())}`
-      );
+      const minDelaySeconds = 5;
+      const maxDelaySeconds = 10;
+      const randomDelayMs =
+        Math.floor(
+          Math.random() * (maxDelaySeconds - minDelaySeconds + 1) +
+            minDelaySeconds
+        ) * 1000;
+
+      console.log(`Delaying fetch for ${randomDelayMs / 1000} seconds...`);
+      await delay(randomDelayMs);
+
+      const url = `https://scc.up.railway.app/job-scraper?limit=10&offset=0&category_name=${encodeURIComponent(
+        jobTitleQuery
+      )}`;
+      const response = await fetch(url);
       if (!response.ok) {
         const errorData = await response
           .json()
@@ -112,13 +204,69 @@ export default function JobSuggestionPage() {
       }
       const data: JobSearchAPIResponseFromNext = await response.json();
 
-      if (data.status === "success" && data.jobs) {
-        const processed = data.jobs.map(processJobDataForUI);
-        setFoundJobs(processed);
-        if (processed.length === 0) {
-          setSearchError(
-            "No jobs found matching your query. Try different keywords or broaden your search."
-          );
+      if (data.status === "success" && Array.isArray(data.jobs)) {
+        const processedJobs = data.jobs.map(processJobDataForUI);
+        const normalizedQueryForCategory = jobTitleQuery.toLowerCase().trim();
+
+        // 1. Filter by category
+        const categoryFilteredJobs = processedJobs.filter((job) => {
+          let categoryName = "";
+          if (job.category) {
+            if (typeof job.category === "string") {
+              categoryName = job.category;
+            } else if (
+              typeof job.category === "object" &&
+              job.category !== null &&
+              "name" in job.category
+            ) {
+              categoryName =
+                typeof (job.category as JobCategoryFromFrontend).name ===
+                "string"
+                  ? (job.category as JobCategoryFromFrontend).name
+                  : "";
+            }
+          }
+          const normalizedCategoryName = categoryName.toLowerCase().trim();
+          if (normalizedCategoryName === "n/a") return false;
+          return normalizedCategoryName === normalizedQueryForCategory;
+        });
+
+        // 2. Deduplicate (keep first occurrence from current API response)
+        const uniqueJobs: JobUIData[] = [];
+        const seenDeduplicationSignatures = new Set<string>();
+
+        for (const job of categoryFilteredJobs) {
+          let deduplicationSignature: string;
+          const normalizedLink = normalizeUrl(job.link);
+
+          if (normalizedLink && normalizedLink !== "#") {
+            deduplicationSignature = `LINK:${normalizedLink}`;
+          } else {
+            const sigTitle = (job.title || "no_title").trim().toLowerCase();
+            const sigCompany = (job.company || "no_company")
+              .trim()
+              .toLowerCase();
+            deduplicationSignature = `TC:${sigTitle}|${sigCompany}`;
+          }
+
+          if (!seenDeduplicationSignatures.has(deduplicationSignature)) {
+            uniqueJobs.push(job);
+            seenDeduplicationSignatures.add(deduplicationSignature);
+          }
+        }
+
+        setFoundJobs(uniqueJobs);
+
+        if (uniqueJobs.length === 0) {
+          if (processedJobs.length > 0 && data.jobs.length > 0) {
+            setSearchError(
+              `Jobs were found for '${jobTitleQuery}', but none matched the category filter ('${jobTitleQuery}') or were unique after filtering.`
+            );
+          } else {
+            setSearchError(
+              `No jobs found for your query '${jobTitleQuery}'. Try different keywords.`
+            );
+          }
         }
       } else {
         setSearchError(
@@ -133,7 +281,8 @@ export default function JobSuggestionPage() {
     }
   };
 
-  const toggleJobDetails = (jobId: number | string) => {
+  const toggleJobDetails = (jobId: string) => {
+    // ID is now string
     setSelectedJobId(selectedJobId === jobId ? null : jobId);
   };
 
@@ -180,7 +329,11 @@ export default function JobSuggestionPage() {
       "We Are Looking For Someone With",
       "B.E./ B.Tech/ BCA/ MCA",
       "Following Aspects Would Be a Plus",
-      "",
+      "Purpose of the Role",
+      "How will you make an impact in this role?",
+      "Minimum Qualification",
+      "Technical Skills/Capabilities",
+      "Bonus incentives","Functional Description:","What you’ll be doing:","Looking for fellow travellers! Is that you?", "Design at MakeMyTrip","About The Job","Minimum qualifications:"
     ];
 
     requirements.forEach((item) => {
@@ -188,47 +341,52 @@ export default function JobSuggestionPage() {
       if (!trimmedItem) return;
       let isNewSectionLead = false;
       for (const title of potentialSectionTitles) {
-        if (trimmedItem.toLowerCase().startsWith(title.toLowerCase())) {
-          const potentialHeadingPattern = new RegExp(
-            `^${title}(\\s*:\\s*|\\s+[^a-z\\d]*$)`,
-            "i"
-          );
-          if (
-            potentialHeadingPattern.test(trimmedItem) ||
-            trimmedItem.length < title.length + 25
-          ) {
-            if (currentSectionTitle !== null && currentItems.length > 0) {
-              sections.push({
-                title: currentSectionTitle,
-                items: currentItems,
-                isList: [
-                  "responsibilities",
-                  "qualifications",
-                  "skills",
-                  "duties",
-                  "requirements",
-                  "benefits",
-                  "perks",
-                  "key responsibilities",
-                  "preferred qualifications",
-                  "what you bring",
-                ].some((s) => currentSectionTitle!.toLowerCase().includes(s)),
-              });
-            }
-            currentSectionTitle = trimmedItem.replace(/:$/, "").trim();
-            currentItems = [];
-            isNewSectionLead = true;
-            const colonIndex = trimmedItem.indexOf(":");
-            if (
-              colonIndex !== -1 &&
-              trimmedItem.substring(colonIndex + 1).trim()
-            ) {
-              currentItems.push(trimmedItem.substring(colonIndex + 1).trim());
-            }
-            break;
+        if (title === "") continue;
+        const potentialHeadingPattern = new RegExp(
+          `^${title.replace(
+            /[.*+?^${}()|[\]\\]/g,
+            "\\$&"
+          )}(\\s*:\\s*|\\s+[^a-z\\d\\s]*$|$)`,
+          "i"
+        );
+
+        if (
+          potentialHeadingPattern.test(trimmedItem) &&
+          trimmedItem.length < title.length + 35
+        ) {
+          if (currentSectionTitle !== null && currentItems.length > 0) {
+            sections.push({
+              title: currentSectionTitle,
+              items: currentItems,
+              isList: [
+                "responsibilities",
+                "qualifications",
+                "skills",
+                "duties",
+                "requirements",
+                "benefits",
+                "perks",
+                "key responsibilities",
+                "preferred qualifications",
+                "what you bring",
+                "Minimum Qualification",
+              ].some((s) => currentSectionTitle!.toLowerCase().includes(s)),
+            });
           }
+          currentSectionTitle = trimmedItem.replace(/:$/, "").trim();
+          currentItems = [];
+          isNewSectionLead = true;
+          const colonIndex = trimmedItem.indexOf(":");
+          if (
+            colonIndex !== -1 &&
+            trimmedItem.substring(colonIndex + 1).trim()
+          ) {
+            currentItems.push(trimmedItem.substring(colonIndex + 1).trim());
+          }
+          break;
         }
       }
+
       if (!isNewSectionLead) {
         if (currentSectionTitle === null) currentSectionTitle = "Details";
         currentItems.push(trimmedItem);
@@ -249,10 +407,25 @@ export default function JobSuggestionPage() {
           "key responsibilities",
           "preferred qualifications",
           "what you bring",
+          "Minimum Qualification",
         ].some((s) => currentSectionTitle!.toLowerCase().includes(s)),
       });
     }
     if (sections.length === 0 && requirements.length > 0) {
+      const looksLikeList = requirements.every(
+        (r) => r.startsWith("- ") || r.startsWith("* ") || r.startsWith("• ")
+      );
+      if (looksLikeList) {
+        return (
+          <ul className="list-disc list-inside space-y-1 pl-5 text-sm text-gray-700">
+            {requirements.map((detail, i) => (
+              <li key={i} className="leading-relaxed">
+                {detail.replace(/^[-*•]\s*/, "")}
+              </li>
+            ))}
+          </ul>
+        );
+      }
       return (
         <div className="text-sm text-gray-700 whitespace-pre-line">
           {requirements.join("\n")}
@@ -382,7 +555,7 @@ export default function JobSuggestionPage() {
       {!isLoading && !searchError && foundJobs.length > 0 && (
         <div className="max-w-3xl mx-auto space-y-5">
           <h2 className="text-2xl font-semibold text-gray-800 text-center mb-6">
-            Found {foundJobs.length} Matching Opportunity
+            Found {foundJobs.length} Matching Opportunit
             {foundJobs.length === 1 ? "y" : "ies"}
           </h2>
           {foundJobs.map((job) => (
@@ -391,7 +564,7 @@ export default function JobSuggestionPage() {
               className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-xl"
             >
               <button
-                onClick={() => toggleJobDetails(job.id)}
+                onClick={() => toggleJobDetails(job.id as string)}
                 className="w-full flex justify-between items-center p-4 sm:p-6 text-left hover:bg-gray-50 focus:outline-none"
                 aria-expanded={selectedJobId === job.id}
                 aria-controls={`job-details-${job.id}`}
@@ -401,19 +574,16 @@ export default function JobSuggestionPage() {
                     className="text-lg md:text-xl font-semibold text-gray-700 block truncate"
                     title={job.title}
                   >
-                    {job.title}
+                    {/* {job.title} */}
                   </span>
                   <span className="text-xs text-gray-500 block mt-1">
-                    Source: {job.source || "N/A"} • Level: {job.level || "N/A"}{" "}
-                    • Category:{" "}
-                    {
-                      // Explicitly handle the category display
-                      job.category
-                        ? typeof job.category === "string"
-                          ? job.category
-                          : job.category.name
-                        : "N/A"
-                    }
+                    Level: {job.level || "N/A"} • Category:{" "}
+                    {job.category
+                      ? typeof job.category === "string"
+                        ? job.category
+                        : (job.category as JobCategoryFromFrontend).name ||
+                          "N/A"
+                      : "N/A"}
                   </span>
                 </div>
                 {selectedJobId === job.id ? (
@@ -428,15 +598,17 @@ export default function JobSuggestionPage() {
                   className="p-4 sm:p-6 border-t border-gray-200 bg-slate-50"
                 >
                   {formatRequirements(job.parsedRequirements)}
-                  <a
-                    href={job.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-8 inline-flex items-center bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-5 rounded-lg text-sm transition shadow hover:shadow-md"
-                  >
-                    <LinkIcon className="h-5 w-5 mr-2" /> View Original Job
-                    Posting
-                  </a>
+                  {job.link && job.link !== "#" && (
+                    <a
+                      href={job.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-8 inline-flex items-center bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-5 rounded-lg text-sm transition shadow hover:shadow-md"
+                    >
+                      <LinkIcon className="h-5 w-5 mr-2" /> View Original Job
+                      Posting
+                    </a>
+                  )}
                 </div>
               )}
             </div>
